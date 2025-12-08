@@ -1,8 +1,12 @@
 # Environment
 .env
-venv/
-__pycache__/
-*.pyc
+.env.local
+
+# Dependencies
+node_modules/
+
+# Build output
+dist/
 
 # Sessions
 sessions/
@@ -11,3 +15,13 @@ sessions/
 # IDE
 .vscode/
 .idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+npm-debug.log*

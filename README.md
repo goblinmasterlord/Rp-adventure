@@ -1,6 +1,6 @@
 # Infinite Adventure
 
-> A procedural dark fantasy text adventure powered by Gemini AI.
+> A procedural dark fantasy text adventure powered by Gemini AI using the Vercel AI SDK.
 
 Where every choice echoes in shadow.
 
@@ -15,6 +15,13 @@ Infinite Adventure is a text-based adventure game that generates infinite, coher
 - **Consequence Engine**: Choices have real consequences—including permanent death
 - **Three-Phase Pacing**: Carefully paced narrative from hook → investigation → climax
 - **Dark Fantasy Aesthetic**: Atmospheric Gothic horror meets mystery
+
+## Tech Stack
+
+- **Backend**: Node.js + TypeScript + Express
+- **AI**: Vercel AI SDK with Google Gemini (1.5 Pro & Flash)
+- **Validation**: Zod for schema validation and structured outputs
+- **Frontend**: Vanilla HTML/CSS/JS with Gothic aesthetic
 
 ## Architecture
 
@@ -35,7 +42,7 @@ Instead of sending the full conversation history (which would exceed token limit
 
 ### The Consequence Engine
 
-Every AI response returns structured JSON with:
+Every AI response returns structured JSON (via Zod schema) with:
 - Narrative text
 - Health changes
 - Player status (ALIVE/DEAD/VICTORIOUS)
@@ -51,72 +58,85 @@ Stupid actions have consequences. Death is permanent.
 git clone <repository-url>
 cd Rp-adventure
 
-# Create virtual environment
-python -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
-
 # Install dependencies
-pip install -r requirements.txt
+npm install
 
 # Create .env file with your Gemini API key
-echo "GEMINI_API_KEY=your_api_key_here" > .env
+cp .env.example .env
+# Edit .env and add your API key
 ```
 
 Get a Gemini API key from: https://makersuite.google.com/app/apikey
 
 ## Usage
 
-### Web Interface
+### Development Mode
 
 ```bash
-python app.py
+npm run dev
 ```
 
 Then open http://localhost:5000 in your browser.
 
-### CLI Mode
+### Production Build
 
 ```bash
-python cli.py
+npm run build
+npm start
 ```
-
-Play directly in your terminal.
 
 ## Project Structure
 
 ```
 Rp-adventure/
-├── app.py              # Flask web application entry point
-├── cli.py              # Terminal-based game client
-├── requirements.txt    # Python dependencies
-├── .env.example        # Environment variable template
-│
 ├── src/
+│   ├── server.ts         # Express server entry point
+│   │
 │   ├── api/
-│   │   └── routes.py   # Flask API endpoints
+│   │   └── routes.ts     # API endpoints
 │   │
 │   ├── core/
-│   │   ├── engine.py   # Main game orchestrator
-│   │   ├── gemini.py   # Gemini API integration
-│   │   └── summarizer.py # Memory compression worker
+│   │   ├── engine.ts     # Main game orchestrator
+│   │   ├── gemini.ts     # Vercel AI SDK / Gemini integration
+│   │   └── summarizer.ts # Memory compression worker
 │   │
 │   ├── models/
-│   │   ├── session.py  # Game session state
-│   │   ├── narrative.py # Story structures (TruthSeed, Phase)
-│   │   ├── mechanics.py # Health, inventory, clues
-│   │   └── response.py # Gemini response schema
+│   │   ├── session.ts    # Game session state
+│   │   ├── narrative.ts  # Story structures (TruthSeed, Phase)
+│   │   ├── mechanics.ts  # Health, inventory, clues
+│   │   └── response.ts   # Gemini response schema (Zod)
 │   │
 │   └── prompts/
-│       ├── builder.py  # Rolling Context prompt assembly
-│       └── templates.py # AI prompt templates
+│       ├── builder.ts    # Rolling Context prompt assembly
+│       └── templates.ts  # AI prompt templates
 │
 ├── static/
-│   ├── css/style.css   # Dark fantasy UI styles
-│   └── js/game.js      # Frontend game logic
+│   ├── css/style.css     # Dark fantasy UI styles
+│   └── js/game.js        # Frontend game logic
 │
-└── templates/
-    └── index.html      # Game interface
+├── templates/
+│   └── index.html        # Game interface
+│
+├── package.json          # Node.js dependencies
+├── tsconfig.json         # TypeScript configuration
+└── .env.example          # Environment variable template
 ```
+
+## Environment Variables
+
+| Variable | Description | Required |
+|----------|-------------|----------|
+| `GOOGLE_GENERATIVE_AI_API_KEY` | Your Gemini API key | Yes |
+| `PORT` | Server port (default: 5000) | No |
+
+## API Endpoints
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| POST | `/api/new-game` | Start a new game session |
+| POST | `/api/action` | Process player action |
+| GET | `/api/state/:sessionId` | Get current game state |
+| DELETE | `/api/session/:sessionId` | End session |
 
 ## Design Philosophy
 
@@ -128,9 +148,15 @@ Rp-adventure/
 
 ### Technical
 - Token-efficient through memory compression
-- Structured responses enable consequence tracking
+- Structured outputs via Zod schemas ensure reliable parsing
 - Phase gating prevents rushed narratives
 - Anti-injection protection maintains game integrity
+
+## Vercel AI SDK Features Used
+
+- `generateObject()` - Structured output with Zod schemas for reliable JSON
+- `generateText()` - Simple text generation for summarization
+- `@ai-sdk/google` - Gemini 1.5 Pro for narrative, Flash for summaries
 
 ## Contributing
 
@@ -140,6 +166,7 @@ This is an MVP. Areas for expansion:
 - Multiple story genres
 - Multiplayer elements
 - Achievement system
+- Streaming responses for better UX
 
 ## License
 
