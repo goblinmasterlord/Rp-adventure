@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Infinite Adventure</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Crimson+Text:ital,wght@0,400;0,600;1,400&family=MedievalSharp&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+    <div class="vignette"></div>
+    <div class="noise-overlay"></div>
+    <div class="fog-layer"></div>
+
+    <!-- Floating Particles -->
+    <div class="particles" id="particles"></div>
+
+    <!-- Title Screen -->
+    <div id="title-screen" class="screen active">
+        <div class="title-content">
+            <div class="sigil"></div>
+            <h1 class="game-title">
+                <span class="title-line">Infinite</span>
+                <span class="title-line accent">Adventure</span>
+            </h1>
+            <p class="tagline">Where every choice echoes in shadow</p>
+
+            <div class="name-entry">
+                <label for="player-name">What name do you carry?</label>
+                <input type="text" id="player-name" placeholder="Enter your name..." maxlength="24" autocomplete="off">
+            </div>
+
+            <button id="begin-btn" class="arcane-button">
+                <span class="btn-text">Begin the Descent</span>
+                <span class="btn-glow"></span>
+            </button>
+
+            <div class="warning-text">
+                <span class="skull">&#9760;</span>
+                <span>Choices have consequences. Death is permanent.</span>
+                <span class="skull">&#9760;</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Game Screen -->
+    <div id="game-screen" class="screen">
+        <!-- Status Bar -->
+        <header class="status-bar">
+            <div class="status-left">
+                <div class="player-name-display">
+                    <span class="label">Wanderer:</span>
+                    <span id="display-name" class="value">Unknown</span>
+                </div>
+                <div class="turn-counter">
+                    <span class="label">Turn</span>
+                    <span id="turn-num" class="value">0</span>
+                </div>
+            </div>
+
+            <div class="status-center">
+                <div class="health-orbs" id="health-orbs">
+                    <div class="orb filled" data-index="0"></div>
+                    <div class="orb filled" data-index="1"></div>
+                    <div class="orb filled" data-index="2"></div>
+                </div>
+                <span id="health-text" class="health-text">Healthy</span>
+            </div>
+
+            <div class="status-right">
+                <div class="phase-display">
+                    <span class="label">Phase:</span>
+                    <span id="phase-name" class="value">THE HOOK</span>
+                </div>
+                <div class="clue-counter">
+                    <span class="clue-icon">&#128270;</span>
+                    <span id="clue-count" class="value">0</span>/3
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Narrative Area -->
+        <main class="narrative-container">
+            <div class="scroll-wrapper">
+                <div id="narrative-scroll" class="narrative-scroll">
+                    <!-- Narrative entries will be inserted here -->
+                </div>
+            </div>
+
+            <!-- Atmospheric Hint -->
+            <div id="atmospheric-hint" class="atmospheric-hint hidden"></div>
+        </main>
+
+        <!-- Inventory Sidebar (toggleable) -->
+        <aside id="inventory-panel" class="inventory-panel collapsed">
+            <button id="inventory-toggle" class="inventory-toggle">
+                <span class="toggle-icon">&#9776;</span>
+            </button>
+            <div class="inventory-content">
+                <h3>Possessions</h3>
+                <ul id="inventory-list" class="inventory-list">
+                    <li class="empty-inventory">Your pockets are empty</li>
+                </ul>
+            </div>
+        </aside>
+
+        <!-- Input Area -->
+        <footer class="input-area">
+            <div class="input-wrapper">
+                <span class="input-prompt">&#9654;</span>
+                <input type="text" id="player-input" placeholder="What do you do?" autocomplete="off" disabled>
+                <button id="submit-btn" class="submit-button" disabled>
+                    <span class="submit-icon">&#10148;</span>
+                </button>
+            </div>
+            <div id="loading-indicator" class="loading-indicator hidden">
+                <span class="loading-text">The shadows shift...</span>
+                <div class="loading-dots">
+                    <span></span><span></span><span></span>
+                </div>
+            </div>
+        </footer>
+    </div>
+
+    <!-- Game Over Screen -->
+    <div id="gameover-screen" class="screen">
+        <div class="gameover-content">
+            <div class="death-sigil"></div>
+            <h2 id="gameover-title" class="gameover-title">Your Journey Ends</h2>
+            <p id="gameover-subtitle" class="gameover-subtitle">The darkness claims another soul</p>
+            <div id="final-narrative" class="final-narrative"></div>
+            <div class="gameover-stats">
+                <div class="stat">
+                    <span class="stat-label">Turns Survived</span>
+                    <span id="final-turns" class="stat-value">0</span>
+                </div>
+                <div class="stat">
+                    <span class="stat-label">Clues Found</span>
+                    <span id="final-clues" class="stat-value">0</span>
+                </div>
+            </div>
+            <button id="restart-btn" class="arcane-button">
+                <span class="btn-text">Rise Again</span>
+                <span class="btn-glow"></span>
+            </button>
+        </div>
+    </div>
+
+    <!-- Victory Screen -->
+    <div id="victory-screen" class="screen">
+        <div class="victory-content">
+            <div class="victory-sigil"></div>
+            <h2 class="victory-title">Light Pierces Shadow</h2>
+            <p class="victory-subtitle">You have unraveled the mystery</p>
+            <div id="victory-narrative" class="final-narrative"></div>
+            <div class="gameover-stats">
+                <div class="stat">
+                    <span class="stat-label">Total Turns</span>
+                    <span id="victory-turns" class="stat-value">0</span>
+                </div>
+                <div class="stat">
+                    <span class="stat-label">Clues Discovered</span>
+                    <span id="victory-clues" class="stat-value">0</span>
+                </div>
+            </div>
+            <button id="new-game-btn" class="arcane-button gold">
+                <span class="btn-text">Begin Anew</span>
+                <span class="btn-glow"></span>
+            </button>
+        </div>
+    </div>
+
+    <script src="/static/js/game.js"></script>
+</body>
+</html>
