@@ -109,6 +109,9 @@
                     <span class="clue-icon">&#128270;</span>
                     <span id="clue-count" class="value">0</span>/3
                 </div>
+                <button id="inventory-btn" class="inventory-btn" aria-label="Open inventory">
+                    <span>&#9776;</span>
+                </button>
             </div>
         </header>
 
@@ -124,10 +127,10 @@
             <div id="atmospheric-hint" class="atmospheric-hint hidden"></div>
         </main>
 
-        <!-- Inventory Panel (slide-up on mobile, sidebar on desktop) -->
+        <!-- Inventory Panel (fullscreen on mobile, sidebar on desktop) -->
         <aside id="inventory-panel" class="inventory-panel">
-            <button id="inventory-toggle" class="inventory-toggle">
-                <span class="toggle-icon">&#9776;</span>
+            <button id="inventory-close" class="inventory-close" aria-label="Close inventory">
+                &times;
             </button>
             <div class="inventory-content">
                 <h3>Possessions</h3>

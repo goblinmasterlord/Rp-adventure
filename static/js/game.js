@@ -40,6 +40,8 @@ class InfiniteAdventure {
             atmosphericHint: document.getElementById('atmospheric-hint'),
             inventoryPanel: document.getElementById('inventory-panel'),
             inventoryToggle: document.getElementById('inventory-toggle'),
+            inventoryBtn: document.getElementById('inventory-btn'),
+            inventoryClose: document.getElementById('inventory-close'),
             inventoryList: document.getElementById('inventory-list'),
             playerInput: document.getElementById('player-input'),
             submitBtn: document.getElementById('submit-btn'),
@@ -101,7 +103,17 @@ class InfiniteAdventure {
         this.elements.playerInput.addEventListener('keypress', (e) => {
             if (e.key === 'Enter' && !this.isLoading) this.submitAction();
         });
-        this.elements.inventoryToggle.addEventListener('click', () => this.toggleInventory());
+
+        // Inventory controls
+        if (this.elements.inventoryToggle) {
+            this.elements.inventoryToggle.addEventListener('click', () => this.toggleInventory());
+        }
+        if (this.elements.inventoryBtn) {
+            this.elements.inventoryBtn.addEventListener('click', () => this.toggleInventory());
+        }
+        if (this.elements.inventoryClose) {
+            this.elements.inventoryClose.addEventListener('click', () => this.closeInventory());
+        }
 
         // End screens
         this.elements.restartBtn.addEventListener('click', () => this.resetToTitle());
@@ -517,6 +529,10 @@ class InfiniteAdventure {
 
     toggleInventory() {
         this.elements.inventoryPanel.classList.toggle('expanded');
+    }
+
+    closeInventory() {
+        this.elements.inventoryPanel.classList.remove('expanded');
     }
 
     // ==========================================================================

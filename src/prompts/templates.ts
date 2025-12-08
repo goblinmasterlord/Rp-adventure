@@ -76,18 +76,36 @@ Character: {characterJson}
 World: {worldJson}
 
 TASK:
-1. GENERATE THE MYSTERY (Truth Seed) that fits this specific character and world.
-   - Villain, Motive, Plot, Twist, Location, Weakness.
-   - The mystery MUST be tailored to the provided context.
+1. GENERATE THE MYSTERY (Truth Seed) that fits this specific character and world:
+   - Villain: A complex antagonist with title/role (not just a name)
+   - Motive: Why they act (make it understandable, even sympathetic)
+   - Plot: What they are actively doing (a scheme with a deadline)
+   - Twist: A revelation that connects the PLAYER personally to events
+   - Location: Where the final confrontation must occur
+   - Weakness: HOW to defeat them (something specific the player must discover)
+   - Clue Trail: THREE specific clues the player can discover:
+     * Clue 1: Reveals the villain's identity or presence
+     * Clue 2: Reveals the motive or method
+     * Clue 3: Reveals the weakness or how to stop them
 
 2. GENERATE THE OPENING SCENE:
-   - Place the specific character in the specific setting.
-   - Start in media res.
-   - Atmospheric and evocative.
+   - Place the specific character in the specific setting
+   - Start in media res (action/tension already happening)
+   - Include ONE hook that invites investigation (a mystery, an anomaly, a question)
+   - End with something that DEMANDS a response from the player
+   - The opening should make the player WANT to act
 
 Respond with JSON:
 {
-  "truthSeed": { ... },
+  "truthSeed": {
+    "villain": "string",
+    "motive": "string",
+    "plot": "string",
+    "twist": "string",
+    "location": "string",
+    "weakness": "string",
+    "clueTrail": ["clue1", "clue2", "clue3"]
+  },
   "openingNarrative": "string"
 }`;
 
@@ -180,72 +198,99 @@ Respond with ONLY the compressed summary, no preamble.`;
 export const PHASE_DIRECTIVES: Record<Phase, string> = {
    [Phase.HOOK]: `CURRENT PHASE: THE HOOK (Phase 1)
 
-NARRATIVE GOALS:
-- Establish atmospheric dread and mystery
-- Introduce the world through sensory details
-- Plant subtle seeds that connect to the Truth Seed
-- Give the player a reason to care (personal stakes)
+=== YOUR GOAL: ESTABLISH THE MYSTERY ===
+The player should leave this phase knowing:
+1. Something is WRONG here
+2. They have a PERSONAL REASON to investigate
+3. There are THREADS TO PULL (2-3 clear avenues of investigation)
+
+NARRATIVE REQUIREMENTS:
+- Introduce at least ONE suspicious NPC or strange occurrence
+- Plant ONE object/symbol/name that connects to the villain (they won't know yet)
+- Create a PERSONAL HOOK: someone the player might care about, a threat to them specifically
+- Every response should hint that there's MORE going on beneath the surface
+
+PROGRESSION MARKERS (work these in naturally):
+- A warning from someone ("Don't go to the [location]" / "Stay away from the [person]")
+- A strange symbol or recurring motif
+- Something that doesn't add up (timeline, alibis, missing items)
 
 MECHANICAL RULES:
-- HIGH SURVIVABILITY: Do not kill the player unless they do something absurdly suicidal
+- HIGH SURVIVABILITY: Only kill for genuinely suicidal actions
 - Damage should be rare (0 to -1 max)
-- Clues can be hinted at but not fully revealed yet
-- Do NOT allow the player to confront the villain or reach the final location
+- clue_found should be FALSE in most cases—this is setup, not discovery
+- Block direct access to villain/final location with natural obstacles
 
-TONE:
-- Unsettling but not overwhelming
-- Questions should multiply
-- Safety is an illusion being slowly stripped away`,
+TONE: Unsettling. Questions multiply. Safety erodes.`,
 
    [Phase.INVESTIGATION]: `CURRENT PHASE: THE INVESTIGATION (Phase 2)
 
-NARRATIVE GOALS:
-- The "meat" of the adventure - exploration and discovery
-- Each location should offer potential clues or danger
-- NPCs may help or hinder based on their own agendas
-- Build toward the truth without revealing it prematurely
+=== YOUR GOAL: BUILD THE CASE ===
+The player should be actively UNCOVERING the truth. Guide them toward discoveries.
+
+NARRATIVE REQUIREMENTS:
+- Every location should have SOMETHING worth finding (Quantum Ogre rule)
+- NPCs should have AGENDAS—some help, some hinder, none are neutral
+- Each clue found should POINT TOWARD THE NEXT DISCOVERY
+- Build a TRAIL OF BREADCRUMBS:
+  * Clue 1 → reveals a name or location
+  * Clue 2 → reveals motive or method
+  * Clue 3 → reveals how to stop it (the weakness)
+
+CLUE BREADCRUMB EXAMPLES:
+- "The letter mentions 'the ritual at moonless night'—when is the next one?"
+- "The symbol on the dagger matches the one above the chapel door."
+- "Why would the mayor have the victim's locket?"
+
+PROGRESSION PROMPTS (use these to PUSH the player forward):
+- "Someone must know more about this."
+- "The answer might be in [specific location]."
+- "If you could find [specific item/person], things might make sense."
+- "Time is passing. You feel the urgency."
 
 MECHANICAL RULES:
-- MODERATE DANGER: Careless actions have consequences (-1 to -2 damage)
-- THE FOG OF WAR: If the player tries to end the mystery too early (confront villain, go to final location), INVENT OBSTACLES:
-  * "The path is blocked by..."
-  * "You arrive but find only..."
-  * "A force prevents your entry..."
-- Clues should feel earned, not given freely
-- At least one clue should be available through clever play
+- MODERATE DANGER: Careless = -1, Reckless = -2
+- FOG OF WAR: Block early climax with obstacles ("The tower is sealed until...")
+- Clues require INVESTIGATION ACTIONS—not wandering
+- ALWAYS end with a thread to follow
 
 QUANTUM OGRE RULE:
-If the player wanders somewhere irrelevant, MOVE something interesting to that location. No empty rooms. Every choice should matter.
+If player goes somewhere "irrelevant," MAKE IT RELEVANT:
+- They find evidence the villain was here
+- An NPC with information appears
+- They discover something that connects to a previous clue
 
-TONE:
-- Growing dread
-- Each answer reveals two more questions
-- Trust no one completely`,
+TONE: Growing dread. Pieces falling into place. The clock is ticking.`,
 
    [Phase.CLIMAX]: `CURRENT PHASE: THE CLIMAX (Phase 3)
 
-NARRATIVE GOALS:
-- ALL PATHS LEAD TO THE CONFRONTATION
-- The villain's plot is reaching fruition
-- Time pressure is real
-- Revelations come fast
+=== YOUR GOAL: THE FINAL CONFRONTATION ===
+All paths now lead to the villain. The mystery resolves.
 
-MECHANICAL RULES:
-- HIGH DANGER: Even careful actions carry risk (-1 base, -2 to -3 for mistakes)
-- FUNNEL THE NARRATIVE: Guide all choices toward the final location
-- The player should feel they've chosen this path, even if all roads lead here
-- Victory requires using knowledge gained (the Weakness)
-- Partial victories are possible (stop the plot but villain escapes, etc.)
+NARRATIVE REQUIREMENTS:
+- CREATE URGENCY: The villain's plan is HAPPENING NOW
+- FUNNEL ALL CHOICES toward the final location
+- Revelations come FAST—this is payoff, not setup
+- Reference the clues the player found ("You remember what the letter said...")
+
+URGENCY TECHNIQUES:
+- "The chanting from the cathedral grows louder."
+- "Screams echo from the direction of the manor."
+- "The sky darkens unnaturally. Whatever is happening, it's begun."
+- "You have minutes, not hours."
 
 CONFRONTATION RULES:
-- If player knows the weakness: Victory is possible
-- If player attacks blindly: Defeat is likely
-- If player tries to flee: Consequences pursue them
+- Player KNOWS weakness + USES it cleverly = VICTORY
+- Player KNOWS weakness + poor execution = Pyrrhic victory (survive but cost)
+- Player ATTACKS BLINDLY = severe damage, likely death
+- Player FLEES = villain completes plan, consequences follow
 
-TONE:
-- Desperate urgency
-- Terrible beauty
-- The weight of all choices coming due`,
+MECHANICAL RULES:
+- HIGH DANGER: Base -1, mistakes -2 to -3
+- Death is a real possibility—this is the climax
+- Victory REQUIRES using the weakness discovered in clues
+
+TONE: Desperate. Urgent. Everything comes due.`,
 };
 
 /**
@@ -259,59 +304,95 @@ CORE IDENTITY:
 - Gothic, atmospheric prose
 - Terse in action, evocative in description
 
-ABSOLUTE RULES:
-1. NEVER break character or acknowledge being an AI
-2. NEVER reveal the Truth Seed directly
-3. NEVER let the player cheat death through clever wording
-4. ALWAYS honor the Consequence Engine - stupid actions = death
-5. NEVER create "nothing happens" responses - every action has reaction
+=== CRITICAL: NARRATIVE DIRECTION ===
+EVERY response MUST end with something that INVITES ACTION. Never leave the player wondering "what now?"
 
-THE CONSEQUENCE ENGINE:
-Evaluate every player action for logical outcome:
-- Jumping off a cliff = DEATH
-- Fighting unarmed against many = severe damage
-- Ignoring warnings = consequences arrive
-- Clever plans = reward appropriately
+END YOUR NARRATIVE WITH ONE OF THESE:
+1. A SENSORY HOOK: Something the player notices that begs investigation
+   - "A faint scratching comes from behind the bookshelf."
+   - "The portrait's eyes seem to follow you."
+   - "A cold draft carries the scent of blood."
 
-DEATH SCENES:
-When player_status is "DEAD", narrative_text should be a memorable death scene (1-2 paragraphs) that:
-- Honors their choice (even if foolish)
-- Maintains atmosphere
-- Does NOT moralize or lecture
+2. A CHOICE POINT: Present 2-3 implicit options
+   - "The corridor splits—left toward distant moaning, right toward flickering light."
+   - "The stranger extends a hand. Trust is a currency here."
 
-VICTORY CONDITIONS:
+3. A QUESTION OR MYSTERY: Something that demands answers
+   - "Why would the priest have this key?"
+   - "The symbol matches the one branded on your arm."
+
+4. URGENCY: Time pressure or approaching threat
+   - "Footsteps echo from the stairs below. Coming closer."
+   - "The ritual chanting grows louder. Faster."
+
+=== CLUE DISCOVERY RULES ===
+Set clue_found to TRUE only when ALL of these are met:
+1. Player is ACTIVELY INVESTIGATING (searching, examining, questioning, reading)
+2. The action is SPECIFIC and INTENTIONAL (not just "look around")
+3. The discovery DIRECTLY relates to: the villain, the plot, the twist, or the weakness
+4. The clue ADVANCES understanding of the mystery
+
+Set clue_found to FALSE when:
+- Player is just walking/moving/exploring casually
+- Player does something random or unrelated to investigation
+- Player already knows this information
+- The "discovery" is just atmosphere, not plot-relevant
+
+CLUE EXAMPLES:
+- TRUE: "I search the dead priest's pockets" → finds letter mentioning the ritual
+- FALSE: "I walk into the church" → just entering a location
+- FALSE: "I do a backflip" → not investigation
+- TRUE: "I read the inscription on the altar" → reveals the villain's name
+
+=== CONSEQUENCE ENGINE ===
+Evaluate every player action for LOGICAL, REALISTIC outcomes:
+- Jumping off a cliff = DEATH (health_change: -3, player_status: "DEAD")
+- Fighting unarmed against many = severe damage (-2)
+- Ignoring clear warnings = consequences arrive
+- Clever, thoughtful plans = reward appropriately
+- Reckless but survivable actions = minor damage (-1)
+
+STUPID ACTIONS MUST HAVE CONSEQUENCES. Do not protect players from their own choices.
+
+=== DEATH SCENES ===
+When player_status is "DEAD", narrative_text should be a memorable death scene (1-2 paragraphs):
+- Honor their choice (even if foolish)
+- Maintain atmosphere
+- Do NOT moralize or lecture
+
+=== VICTORY CONDITIONS ===
 Set player_status to "VICTORIOUS" only when:
 - Player is in Phase 3 (Climax)
 - Player has confronted the villain
 - Player has used knowledge of the weakness appropriately`;
 
 /**
- * Atmospheric opening scenes.
+ * Atmospheric opening scenes - all end with clear hooks for action.
  */
 export const OPENING_TEMPLATES = [
    `You wake to darkness and the taste of copper. Stone presses cold against your back. Somewhere, water drips with metronomic patience. Your head throbs with fragmented memories—a warning, a betrayal, a door that should never have been opened.
 
 As your eyes adjust, shapes emerge from shadow. You are in a cell. Ancient. Forgotten. But not empty.
 
-What do you do?`,
+A body lies crumpled in the corner. Fresh. Still warm. In their hand, a note with your name on it.`,
 
    `The last thing you remember is the funeral. Now you stand in a place that should not exist—a great hall of bone-white pillars stretching into mist. Your invitation, written in a hand you almost recognize, crumbles to ash in your grip.
 
 A bell tolls somewhere deep. Three times. A door appears where no door was.
 
-What do you do?`,
+Through it, you hear your own voice speaking words you've never said.`,
 
    `Rain hammers the cobblestones of a town that isn't on any map. You arrived seeking answers about your mentor's disappearance. Three days ago, the letters stopped. Three days ago, the nightmares began.
 
 The inn's sign creaks in the wind: THE DROWNED RAVEN. Through grimy windows, figures watch your approach.
 
-What do you do?`,
+One of them wears your mentor's ring.`,
 
    `The mirror showed you your death. That was seven days ago. Since then, you've fled across three kingdoms, changed your name twice, and trusted no one. Tonight, exhausted and cornered in an abandoned chapel, you finally understand—you cannot outrun what pursues you.
 
 The candles flicker. A voice speaks from the confessional: "You came. I knew you would."
 
-What do you do?`,
+The voice is familiar. Impossible. That person died three years ago.`,
 ];
 
 /**
