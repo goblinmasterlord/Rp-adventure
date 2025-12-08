@@ -70,6 +70,20 @@ class InfiniteAdventure {
         this.bindEvents();
         this.createParticles();
         this.focusNameInput();
+        this.handleMobileViewport();
+    }
+
+    // Handle mobile viewport height issues (iOS Safari address bar)
+    handleMobileViewport() {
+        const setVH = () => {
+            const vh = window.innerHeight * 0.01;
+            document.documentElement.style.setProperty('--vh', `${vh}px`);
+        };
+        setVH();
+        window.addEventListener('resize', setVH);
+        window.addEventListener('orientationchange', () => {
+            setTimeout(setVH, 100);
+        });
     }
 
     bindEvents() {
@@ -94,11 +108,32 @@ class InfiniteAdventure {
         this.elements.newGameBtn.addEventListener('click', () => this.resetToTitle());
     }
 
-    // ... (createParticles remain same)
+    createParticles() {
+        const container = this.elements.particles;
+        if (!container) return;
 
-    // ... (focusNameInput remain same)
+        // Reduce particles on mobile for performance
+        const isMobile = window.innerWidth < 600;
+        const particleCount = isMobile ? 8 : 20;
 
-    //Screen Management
+        for (let i = 0; i < particleCount; i++) {
+            const particle = document.createElement('div');
+            particle.className = 'particle';
+            particle.style.left = `${Math.random() * 100}%`;
+            particle.style.animationDelay = `${Math.random() * 20}s`;
+            particle.style.animationDuration = `${15 + Math.random() * 10}s`;
+            container.appendChild(particle);
+        }
+    }
+
+    focusNameInput() {
+        // Don't auto-focus on mobile to prevent keyboard from opening
+        if (window.innerWidth >= 600 && this.elements.playerNameInput) {
+            setTimeout(() => this.elements.playerNameInput.focus(), 100);
+        }
+    }
+
+    // Screen Management
     showScreen(screenId) {
         const screens = ['title-screen', 'setup-screen', 'game-screen', 'gameover-screen', 'victory-screen'];
         screens.forEach(id => {
@@ -521,6 +556,8 @@ class InfiniteAdventure {
     resetToTitle() {
         this.sessionId = null;
         this.currentState = null;
+        this.selectedCharacter = null;
+        this.selectedWorld = null;
         this.elements.playerNameInput.value = '';
         this.elements.narrativeScroll.innerHTML = '';
         this.showScreen('title-screen');

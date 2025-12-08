@@ -2,7 +2,12 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="theme-color" content="#0a0a0c">
+    <meta name="description" content="A procedural dark fantasy text adventure powered by AI">
     <title>Infinite Adventure</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -119,8 +124,8 @@
             <div id="atmospheric-hint" class="atmospheric-hint hidden"></div>
         </main>
 
-        <!-- Inventory Sidebar (toggleable) -->
-        <aside id="inventory-panel" class="inventory-panel collapsed">
+        <!-- Inventory Panel (slide-up on mobile, sidebar on desktop) -->
+        <aside id="inventory-panel" class="inventory-panel">
             <button id="inventory-toggle" class="inventory-toggle">
                 <span class="toggle-icon">&#9776;</span>
             </button>
