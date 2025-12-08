@@ -29,6 +29,40 @@ export const TruthSeedSchema = z.object({
 export type TruthSeed = z.infer<typeof TruthSeedSchema>;
 
 /**
+ * Character profile generated at game start.
+ */
+export const CharacterProfileSchema = z.object({
+  name: z.string().describe('The character name'),
+  class: z.string().describe('Character archetypal class (e.g. Occultist, Grave Robber)'),
+  background: z.string().describe('Brief backstory explaining why they are here'),
+  traits: z.array(z.string()).describe('3-5 key personality traits'),
+  appearance: z.string().describe('Visual description'),
+});
+
+export type CharacterProfile = z.infer<typeof CharacterProfileSchema>;
+
+/**
+ * World context setting the tone.
+ */
+export const WorldContextSchema = z.object({
+  theme: z.string().describe('Core thematic elements (e.g. Cosmic Horror)'),
+  tone: z.string().describe('Atmospheric descriptors'),
+  setting: z.string().describe('The immediate physical setting description'),
+});
+
+export type WorldContext = z.infer<typeof WorldContextSchema>;
+
+/**
+ * Options generated for interactive setup.
+ */
+export const SetupOptionsSchema = z.object({
+  characters: z.array(CharacterProfileSchema).describe('3 distinct character options'),
+  worlds: z.array(WorldContextSchema).describe('3 distinct world settings'),
+});
+
+export type SetupOptions = z.infer<typeof SetupOptionsSchema>;
+
+/**
  * A single exchange in the conversation.
  */
 export interface Turn {

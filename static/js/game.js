@@ -8,11 +8,14 @@ class InfiniteAdventure {
         this.sessionId = null;
         this.isLoading = false;
         this.currentState = null;
+        this.selectedCharacter = null;
+        this.selectedWorld = null;
 
         // DOM Elements
         this.elements = {
             // Screens
             titleScreen: document.getElementById('title-screen'),
+            setupScreen: document.getElementById('setup-screen'),
             gameScreen: document.getElementById('game-screen'),
             gameoverScreen: document.getElementById('gameover-screen'),
             victoryScreen: document.getElementById('victory-screen'),
@@ -20,6 +23,11 @@ class InfiniteAdventure {
             // Title screen
             playerNameInput: document.getElementById('player-name'),
             beginBtn: document.getElementById('begin-btn'),
+
+            // Setup screen
+            characterOptions: document.getElementById('character-options'),
+            worldOptions: document.getElementById('world-options'),
+            enterWorldBtn: document.getElementById('enter-world-btn'),
 
             // Game screen
             displayName: document.getElementById('display-name'),
@@ -66,10 +74,13 @@ class InfiniteAdventure {
 
     bindEvents() {
         // Title screen
-        this.elements.beginBtn.addEventListener('click', () => this.startNewGame());
+        this.elements.beginBtn.addEventListener('click', () => this.initiateSetup());
         this.elements.playerNameInput.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') this.startNewGame();
+            if (e.key === 'Enter') this.initiateSetup();
         });
+
+        // Setup screen
+        this.elements.enterWorldBtn.addEventListener('click', () => this.enterWorld());
 
         // Game screen
         this.elements.submitBtn.addEventListener('click', () => this.submitAction());
@@ -83,53 +94,126 @@ class InfiniteAdventure {
         this.elements.newGameBtn.addEventListener('click', () => this.resetToTitle());
     }
 
-    createParticles() {
-        const container = this.elements.particles;
-        const particleCount = 30;
+    // ... (createParticles remain same)
 
-        for (let i = 0; i < particleCount; i++) {
-            const particle = document.createElement('div');
-            particle.className = 'particle';
-            particle.style.left = `${Math.random() * 100}%`;
-            particle.style.animationDelay = `${Math.random() * 15}s`;
-            particle.style.animationDuration = `${10 + Math.random() * 10}s`;
-            container.appendChild(particle);
-        }
-    }
+    // ... (focusNameInput remain same)
 
-    focusNameInput() {
-        setTimeout(() => this.elements.playerNameInput.focus(), 500);
-    }
-
-    // ==========================================================================
-    // Screen Management
-    // ==========================================================================
-
+    //Screen Management
     showScreen(screenId) {
-        const screens = ['title-screen', 'game-screen', 'gameover-screen', 'victory-screen'];
+        const screens = ['title-screen', 'setup-screen', 'game-screen', 'gameover-screen', 'victory-screen'];
         screens.forEach(id => {
             const screen = document.getElementById(id);
-            screen.classList.toggle('active', id === screenId);
+            if (screen) screen.classList.toggle('active', id === screenId);
         });
     }
 
-    // ==========================================================================
     // Game Flow
-    // ==========================================================================
 
-    async startNewGame() {
+    // Step 1: Request Options
+    async initiateSetup() {
         const playerName = this.elements.playerNameInput.value.trim() || 'Wanderer';
-
         this.setLoading(true);
+        this.elements.beginBtn.classList.add('loading');
         this.elements.beginBtn.disabled = true;
 
         try {
-            const response = await fetch('/api/new-game', {
+            const response = await fetch('/api/setup', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ player_name: playerName })
             });
 
+            const data = await response.json();
+            if (data.success) {
+                this.renderSetupOptions(data.options);
+                this.showScreen('setup-screen');
+            } else {
+                this.showError(data.error || 'Failed to generate options');
+            }
+        } catch (error) {
+            console.error('Setup error:', error);
+            this.showError('Connection failed.');
+        } finally {
+            this.setLoading(false);
+            this.elements.beginBtn.classList.remove('loading');
+            this.elements.beginBtn.disabled = false;
+        }
+    }
+
+    renderSetupOptions(options) {
+        // Render Characters
+        const charContainer = this.elements.characterOptions;
+        charContainer.innerHTML = '';
+        options.characters.forEach((char, index) => {
+            const card = document.createElement('div');
+            card.className = 'setup-card';
+            card.innerHTML = `
+                <div class="card-header">${char.class}</div>
+                <div class="card-body">
+                    <p><strong>Traits:</strong> ${char.traits.join(', ')}</p>
+                    <p class="card-desc">${char.background.substring(0, 100)}...</p>
+                </div>
+            `;
+            card.addEventListener('click', () => this.selectCharacter(card, char));
+            charContainer.appendChild(card);
+        });
+
+        // Render Worlds
+        const worldContainer = this.elements.worldOptions;
+        worldContainer.innerHTML = '';
+        options.worlds.forEach((world, index) => {
+            const card = document.createElement('div');
+            card.className = 'setup-card';
+            card.innerHTML = `
+                <div class="card-header">${world.theme}</div>
+                <div class="card-body">
+                    <p><strong>Tone:</strong> ${world.tone}</p>
+                    <p class="card-desc">${world.setting}</p>
+                </div>
+            `;
+            card.addEventListener('click', () => this.selectWorld(card, world));
+            worldContainer.appendChild(card);
+        });
+    }
+
+    selectCharacter(card, data) {
+        this.selectedCharacter = data;
+        this.elements.characterOptions.querySelectorAll('.setup-card').forEach(c => c.classList.remove('selected'));
+        card.classList.add('selected');
+        this.checkReady();
+    }
+
+    selectWorld(card, data) {
+        this.selectedWorld = data;
+        this.elements.worldOptions.querySelectorAll('.setup-card').forEach(c => c.classList.remove('selected'));
+        card.classList.add('selected');
+        this.checkReady();
+    }
+
+    checkReady() {
+        this.elements.enterWorldBtn.disabled = !(this.selectedCharacter && this.selectedWorld);
+    }
+
+    // Step 2: Start Game with selections
+    async enterWorld() {
+        if (!this.selectedCharacter || !this.selectedWorld) return;
+
+        const playerName = this.elements.playerNameInput.value.trim() || 'Wanderer';
+        this.setLoading(true);
+        this.elements.enterWorldBtn.classList.add('loading');
+        this.elements.enterWorldBtn.disabled = true;
+
+        try {
+            const response = await fetch('/api/new-game', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    player_name: playerName,
+                    character: this.selectedCharacter,
+                    world: this.selectedWorld
+                })
+            });
+            // ... (rest is similar to old startNewGame)
             const data = await response.json();
 
             if (data.success) {
@@ -157,14 +241,17 @@ class InfiniteAdventure {
             } else {
                 this.showError(data.error || 'Failed to start game');
             }
+
         } catch (error) {
-            console.error('Start game error:', error);
-            this.showError('Connection failed. Please try again.');
+            console.error('Enter world error:', error);
+            this.showError('Failed to enter world.');
         } finally {
             this.setLoading(false);
-            this.elements.beginBtn.disabled = false;
+            this.elements.enterWorldBtn.classList.remove('loading');
+            this.elements.enterWorldBtn.disabled = false;
         }
     }
+
 
     async submitAction() {
         const action = this.elements.playerInput.value.trim();
@@ -178,6 +265,7 @@ class InfiniteAdventure {
 
         this.setLoading(true);
         this.disableInput();
+        this.showTypingIndicator(); // Show indicator
 
         try {
             const response = await fetch('/api/action', {
@@ -190,6 +278,8 @@ class InfiniteAdventure {
             });
 
             const data = await response.json();
+
+            this.hideTypingIndicator(); // Hide indicator
 
             if (data.success) {
                 // Check for health changes to animate
@@ -232,10 +322,39 @@ class InfiniteAdventure {
             }
         } catch (error) {
             console.error('Action error:', error);
+            this.hideTypingIndicator();
             this.showError('Connection lost. Please try again.');
             this.enableInput();
         } finally {
             this.setLoading(false);
+        }
+    }
+
+    showTypingIndicator() {
+        const existing = document.getElementById('typing-indicator');
+        if (existing) return;
+
+        const indicator = document.createElement('div');
+        indicator.id = 'typing-indicator';
+        indicator.className = 'typing-indicator';
+        indicator.innerHTML = `
+            <span>The narrator is writing</span>
+            <div class="typing-dot"></div>
+            <div class="typing-dot"></div>
+            <div class="typing-dot"></div>
+        `;
+        this.elements.narrativeScroll.appendChild(indicator);
+        // Scroll to bottom
+        const scrollWrapper = this.elements.narrativeScroll.parentElement;
+        setTimeout(() => {
+            scrollWrapper.scrollTop = scrollWrapper.scrollHeight;
+        }, 100);
+    }
+
+    hideTypingIndicator() {
+        const indicator = document.getElementById('typing-indicator');
+        if (indicator) {
+            indicator.remove();
         }
     }
 

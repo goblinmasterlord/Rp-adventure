@@ -5,6 +5,93 @@
 import { Phase } from '../models/narrative.js';
 
 /**
+ * Game Setup Prompt - uses Gemini Pro to build the world and character.
+ */
+export const GAME_SETUP_PROMPT = `You are the World Builder for a dark fantasy RPG. Your task is to create a cohesive setting and character profile based on the player's name.
+
+PLAYER NAME: {playerName}
+
+1. CREATE A CHARACTER:
+   - Name: {playerName}
+   - Class: Archetype fitting dark fantasy (e.g. Hexblade, Plague Doctor, Disgraced Knight)
+   - Background: Why are they in this dangerous situation?
+   - Traits: 3-5 keywords defining their personality
+   - Appearance: Distinctive visual features
+
+2. CREATE A WORLD CONTEXT:
+   - Theme: The core flavor (e.g. Victorian Horror, Eldritch Decay, Industrial Gothic)
+   - Tone: The prevailing mood
+   - Setting: The specific starting location (a crumbling asylum, a ship trapped in ice, etc.)
+
+3. GENERATE THE MYSTERY (Truth Seed):
+   - Villain: A complex antagonist
+   - Motive: Why they act
+   - Plot: Their current scheme
+   - Twist: A shocking revelation connecting the player to the plot
+   - Location: Where the climax happens
+   - Weakness: How to defeat them
+
+4. GENERATE THE OPENING SCENE:
+   - A descriptive opening paragraph placing the character in the setting.
+   - It MUST start in media res.
+   - It MUST reference their background or traits slightly.
+
+Respond with a JSON object matching this schema:
+{
+  "character": { ... },
+  "world": { ... },
+  "truthSeed": { ... },
+  "openingNarrative": "string"
+}`;
+
+/**
+ * Generate 3 options for Character and World.
+ */
+export const SETUP_OPTIONS_PROMPT = `You are a Dark Fantasy Game Master. Generate options for a new adventure.
+PLAYER NAME: {playerName}
+
+GENERATE 3 DISTINCT CHARACTERS:
+- Different archetypes (e.g. Magic user, Martial, Rogue-like)
+- All must fit a dark/gothic setting
+- Use the player's name
+
+GENERATE 3 DISTINCT WORLDS:
+- Different dark fantasy sub-genres (e.g. Cosmic Horror, Gothic Victorian, Dark Fairytale)
+- Distinct themes and tones
+
+Respond with JSON:
+{
+  "characters": [ {name, class, background, traits, appearance}, ... ],
+  "worlds": [ {theme, tone, setting}, ... ]
+}`;
+
+/**
+ * Start game from specific selection.
+ */
+export const GAME_START_FROM_SELECTION_PROMPT = `You are the Architect of Mysteries.
+PLAYER NAME: {playerName}
+
+CONTEXT:
+Character: {characterJson}
+World: {worldJson}
+
+TASK:
+1. GENERATE THE MYSTERY (Truth Seed) that fits this specific character and world.
+   - Villain, Motive, Plot, Twist, Location, Weakness.
+   - The mystery MUST be tailored to the provided context.
+
+2. GENERATE THE OPENING SCENE:
+   - Place the specific character in the specific setting.
+   - Start in media res.
+   - Atmospheric and evocative.
+
+Respond with JSON:
+{
+  "truthSeed": { ... },
+  "openingNarrative": "string"
+}`;
+
+/**
  * Truth Seed Generator - runs ONCE at game start.
  */
 export const TRUTH_SEED_GENERATOR = `You are the Architect of Mysteries. Your task is to generate a compelling dark fantasy mystery that will serve as the hidden foundation for an interactive story.
@@ -91,7 +178,7 @@ Respond with ONLY the compressed summary, no preamble.`;
  * Phase-specific directives controlling pacing and stakes.
  */
 export const PHASE_DIRECTIVES: Record<Phase, string> = {
-  [Phase.HOOK]: `CURRENT PHASE: THE HOOK (Phase 1)
+   [Phase.HOOK]: `CURRENT PHASE: THE HOOK (Phase 1)
 
 NARRATIVE GOALS:
 - Establish atmospheric dread and mystery
@@ -110,7 +197,7 @@ TONE:
 - Questions should multiply
 - Safety is an illusion being slowly stripped away`,
 
-  [Phase.INVESTIGATION]: `CURRENT PHASE: THE INVESTIGATION (Phase 2)
+   [Phase.INVESTIGATION]: `CURRENT PHASE: THE INVESTIGATION (Phase 2)
 
 NARRATIVE GOALS:
 - The "meat" of the adventure - exploration and discovery
@@ -135,7 +222,7 @@ TONE:
 - Each answer reveals two more questions
 - Trust no one completely`,
 
-  [Phase.CLIMAX]: `CURRENT PHASE: THE CLIMAX (Phase 3)
+   [Phase.CLIMAX]: `CURRENT PHASE: THE CLIMAX (Phase 3)
 
 NARRATIVE GOALS:
 - ALL PATHS LEAD TO THE CONFRONTATION
@@ -202,25 +289,25 @@ Set player_status to "VICTORIOUS" only when:
  * Atmospheric opening scenes.
  */
 export const OPENING_TEMPLATES = [
-  `You wake to darkness and the taste of copper. Stone presses cold against your back. Somewhere, water drips with metronomic patience. Your head throbs with fragmented memories—a warning, a betrayal, a door that should never have been opened.
+   `You wake to darkness and the taste of copper. Stone presses cold against your back. Somewhere, water drips with metronomic patience. Your head throbs with fragmented memories—a warning, a betrayal, a door that should never have been opened.
 
 As your eyes adjust, shapes emerge from shadow. You are in a cell. Ancient. Forgotten. But not empty.
 
 What do you do?`,
 
-  `The last thing you remember is the funeral. Now you stand in a place that should not exist—a great hall of bone-white pillars stretching into mist. Your invitation, written in a hand you almost recognize, crumbles to ash in your grip.
+   `The last thing you remember is the funeral. Now you stand in a place that should not exist—a great hall of bone-white pillars stretching into mist. Your invitation, written in a hand you almost recognize, crumbles to ash in your grip.
 
 A bell tolls somewhere deep. Three times. A door appears where no door was.
 
 What do you do?`,
 
-  `Rain hammers the cobblestones of a town that isn't on any map. You arrived seeking answers about your mentor's disappearance. Three days ago, the letters stopped. Three days ago, the nightmares began.
+   `Rain hammers the cobblestones of a town that isn't on any map. You arrived seeking answers about your mentor's disappearance. Three days ago, the letters stopped. Three days ago, the nightmares began.
 
 The inn's sign creaks in the wind: THE DROWNED RAVEN. Through grimy windows, figures watch your approach.
 
 What do you do?`,
 
-  `The mirror showed you your death. That was seven days ago. Since then, you've fled across three kingdoms, changed your name twice, and trusted no one. Tonight, exhausted and cornered in an abandoned chapel, you finally understand—you cannot outrun what pursues you.
+   `The mirror showed you your death. That was seven days ago. Since then, you've fled across three kingdoms, changed your name twice, and trusted no one. Tonight, exhausted and cornered in an abandoned chapel, you finally understand—you cannot outrun what pursues you.
 
 The candles flicker. A voice speaks from the confessional: "You came. I knew you would."
 
@@ -231,5 +318,5 @@ What do you do?`,
  * Get a random opening scene.
  */
 export function getRandomOpening(): string {
-  return OPENING_TEMPLATES[Math.floor(Math.random() * OPENING_TEMPLATES.length)];
+   return OPENING_TEMPLATES[Math.floor(Math.random() * OPENING_TEMPLATES.length)];
 }

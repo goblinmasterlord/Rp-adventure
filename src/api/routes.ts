@@ -12,15 +12,47 @@ const router = Router();
 const gameSessions = new Map<string, GameSession>();
 
 /**
+ * POST /api/setup
+ * Generate options for game start.
+ */
+router.post('/setup', async (req: Request, res: Response) => {
+  const { player_name } = req.body ?? {};
+
+  if (!player_name) {
+    res.status(400).json({ success: false, error: 'Player name required' });
+    return;
+  }
+
+  try {
+    const engine = getGameEngine();
+    const options = await engine.generateOptions(player_name);
+    res.json({ success: true, options });
+  } catch (error) {
+    console.error('Setup error:', error);
+    res.status(500).json({ success: false, error: 'Failed to generate options' });
+  }
+});
+
+/**
  * POST /api/new-game
  * Start a new game session.
  */
 router.post('/new-game', async (req: Request, res: Response) => {
-  const { player_name = 'Wanderer' } = req.body ?? {};
+  // If character/world provided, use selection flow.
+  // Else fallback to auto-generated flow.
+  const { player_name = 'Wanderer', character, world } = req.body ?? {};
 
   try {
     const engine = getGameEngine();
-    const { session, opening } = await engine.newGame(player_name);
+    let result;
+
+    if (character && world) {
+      result = await engine.newGameFromSelection(player_name, character, world);
+    } else {
+      result = await engine.newGame(player_name);
+    }
+
+    const { session, opening } = result;
 
     gameSessions.set(session.sessionId, session);
 

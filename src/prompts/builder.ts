@@ -49,7 +49,29 @@ function buildBibleBlock(session: GameSession): string {
   if (!session.narrative) return '';
 
   const ts = session.narrative.truthSeed;
-  return `=== THE HIDDEN TRUTH (Never reveal directly) ===
+  const world = session.world;
+  const char = session.character;
+
+  let context = '';
+  if (world) {
+    context += `=== WORLD CONTEXT ===
+THEME: ${world.theme}
+TONE: ${world.tone}
+SETTING: ${world.setting}
+=== END WORLD ===\n\n`;
+  }
+
+  if (char) {
+    context += `=== CHARACTER PROFILE ===
+NAME: ${char.name}
+CLASS: ${char.class}
+BACKGROUND: ${char.background}
+TRAITS: ${char.traits.join(', ')}
+APPEARANCE: ${char.appearance}
+=== END CHARACTER ===\n\n`;
+  }
+
+  return `${context}=== THE HIDDEN TRUTH (Never reveal directly) ===
 VILLAIN: ${ts.villain}
 MOTIVE: ${ts.motive}
 PLOT: ${ts.plot}

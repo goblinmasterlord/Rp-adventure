@@ -13,7 +13,7 @@ import {
   getStateSummary,
   GameStateSummary,
 } from '../models/session.js';
-import { addTurn, Phase } from '../models/narrative.js';
+import { addTurn, Phase, SetupOptions, CharacterProfile, WorldContext } from '../models/narrative.js';
 import {
   PlayerStatus,
   applyDamage,
@@ -58,16 +58,63 @@ export class GameEngine {
     // Create session
     const session = createGameSession(playerName);
 
-    // Generate the hidden truth
-    const truthSeed = await this.client.generateTruthSeed();
+    // Generate comprehensive game foundation (Pro model)
+    const gameStart = await this.client.generateGameStart(playerName);
 
-    // Initialize narrative state
-    initializeNarrative(session, truthSeed);
+    // Initialize narrative state with all generated context
+    initializeNarrative(
+      session,
+      gameStart.truthSeed,
+      gameStart.character,
+      gameStart.world
+    );
 
-    // Get atmospheric opening
-    const opening = getRandomOpening();
+    const opening = gameStart.openingNarrative;
 
     // Store opening as first model turn
+    if (session.narrative) {
+      addTurn(session.narrative, 'model', opening, 0);
+    }
+
+    return { session, opening };
+  }
+
+  /**
+   * Generate setup options (3 characters, 3 worlds).
+   */
+  async generateOptions(playerName: string): Promise<SetupOptions> {
+    return this.client.generateSetupOptions(playerName);
+  }
+
+  /**
+   * Start game from specific character/world selection.
+   */
+  async newGameFromSelection(
+    playerName: string,
+    character: CharacterProfile,
+    world: WorldContext
+  ): Promise<{
+    session: GameSession;
+    opening: string;
+  }> {
+    const session = createGameSession(playerName);
+
+    // Generate mystery/opening based on selection
+    const gameStart = await this.client.generateGameStartFromSelection(
+      playerName,
+      character,
+      world
+    );
+
+    initializeNarrative(
+      session,
+      gameStart.truthSeed,
+      character,
+      world
+    );
+
+    const opening = gameStart.openingNarrative;
+
     if (session.narrative) {
       addTurn(session.narrative, 'model', opening, 0);
     }

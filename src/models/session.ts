@@ -7,6 +7,8 @@ import {
   NarrativeState,
   Phase,
   TruthSeed,
+  CharacterProfile,
+  WorldContext,
   createNarrativeState,
 } from './narrative.js';
 import {
@@ -38,6 +40,9 @@ export interface GameSession {
   updatedAt: Date;
   mechanics: GameMechanics;
   narrative: NarrativeState | null;
+  // Context setup
+  character?: CharacterProfile;
+  world?: WorldContext;
   turnsSinceSummary: number;
 }
 
@@ -61,8 +66,15 @@ export function createGameSession(playerName: string = 'Wanderer'): GameSession 
 /**
  * Initialize narrative with a truth seed.
  */
-export function initializeNarrative(session: GameSession, truthSeed: TruthSeed): void {
+export function initializeNarrative(
+  session: GameSession,
+  truthSeed: TruthSeed,
+  character?: CharacterProfile,
+  world?: WorldContext
+): void {
   session.narrative = createNarrativeState(truthSeed);
+  if (character) session.character = character;
+  if (world) session.world = world;
 }
 
 /**

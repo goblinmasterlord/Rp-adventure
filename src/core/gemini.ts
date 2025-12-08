@@ -5,9 +5,9 @@
 import { generateObject, generateText } from 'ai';
 import { google } from '@ai-sdk/google';
 import { z } from 'zod';
-import { TruthSeed, TruthSeedSchema } from '../models/narrative.js';
+import { TruthSeed, TruthSeedSchema, CharacterProfileSchema, WorldContextSchema, SetupOptions, SetupOptionsSchema, CharacterProfile, WorldContext } from '../models/narrative.js';
 import { GeminiResponse, GeminiResponseSchema, createDefaultResponse } from '../models/response.js';
-import { TRUTH_SEED_GENERATOR } from '../prompts/templates.js';
+import { TRUTH_SEED_GENERATOR, GAME_SETUP_PROMPT, SETUP_OPTIONS_PROMPT, GAME_START_FROM_SELECTION_PROMPT } from '../prompts/templates.js';
 
 /**
  * Fallback truth seed when generation fails.
@@ -27,12 +27,96 @@ const FALLBACK_TRUTH_SEED: TruthSeed = {
 export class GeminiClient {
   private model;
   private fastModel;
+  private proModel;
 
   constructor() {
-    // Use Gemini Pro for main narrative (better reasoning)
-    this.model = google('gemini-1.5-pro');
-    // Use Gemini Flash for summarization (faster, cheaper)
-    this.fastModel = google('gemini-1.5-flash');
+    // Use Gemini 2.5 Flash for main narrative
+    this.model = google('gemini-2.5-flash');
+    // Use Gemini 2.5 Flash for summarization
+    this.fastModel = google('gemini-2.5-flash');
+    // Use Gemini 2.5 Pro for setup (high creativity/reasoning)
+    this.proModel = google('gemini-2.5-pro');
+  }
+
+  /**
+   * Generate 3 options for character and world.
+   */
+  async generateSetupOptions(playerName: string): Promise<SetupOptions> {
+    try {
+      const { object } = await generateObject({
+        model: this.proModel,
+        schema: SetupOptionsSchema,
+        prompt: SETUP_OPTIONS_PROMPT.replace('{playerName}', playerName),
+        temperature: 0.9,
+      });
+
+      return object;
+    } catch (error) {
+      console.error('Setup options generation failed:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Start game from specific selection.
+   */
+  async generateGameStartFromSelection(
+    playerName: string,
+    character: CharacterProfile,
+    world: WorldContext
+  ): Promise<{
+    truthSeed: TruthSeed;
+    openingNarrative: string;
+  }> {
+    try {
+      const { object } = await generateObject({
+        model: this.proModel,
+        schema: z.object({
+          truthSeed: TruthSeedSchema,
+          openingNarrative: z.string(),
+        }),
+        prompt: GAME_START_FROM_SELECTION_PROMPT
+          .replace('{playerName}', playerName)
+          .replace('{characterJson}', JSON.stringify(character))
+          .replace('{worldJson}', JSON.stringify(world)),
+        temperature: 0.9,
+      });
+
+      return object;
+    } catch (error) {
+      console.error('Game start from selection failed:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Generate the full game context (Character, World, Mystery) at start.
+   * @deprecated - Use generateSetupOptions + generateGameStartFromSelection instead
+   */
+  async generateGameStart(playerName: string): Promise<{
+    character: any;
+    world: any;
+    truthSeed: TruthSeed;
+    openingNarrative: string;
+  }> {
+    try {
+      const { object } = await generateObject({
+        model: this.proModel,
+        schema: z.object({
+          character: CharacterProfileSchema,
+          world: WorldContextSchema,
+          truthSeed: TruthSeedSchema,
+          openingNarrative: z.string(),
+        }),
+        prompt: GAME_SETUP_PROMPT.replace('{playerName}', playerName),
+        temperature: 0.9,
+      });
+
+      return object;
+    } catch (error) {
+      console.error('Game start generation failed:', error);
+      throw error; // Let the caller handle fallback or failure
+    }
   }
 
   /**
@@ -54,6 +138,7 @@ export class GeminiClient {
     }
   }
 
+
   /**
    * Generate a narrative response with the Consequence Engine.
    */
@@ -72,7 +157,10 @@ export class GeminiClient {
 
       return object;
     } catch (error) {
-      console.error('Narrative generation failed:', error);
+      console.error('Narrative generation failed. Error details:', error);
+      if (error instanceof Error) {
+        console.error('Stack:', error.stack);
+      }
       return createDefaultResponse({
         narrative_text:
           'Shadows flicker at the edge of perception. Something shifts in the darkness, but the moment passes before you can understand it.',
@@ -90,7 +178,7 @@ export class GeminiClient {
         model: this.fastModel,
         prompt,
         temperature: 0.3,
-        maxTokens: 500,
+        // maxTokens: 500,
       });
 
       return text.trim();
