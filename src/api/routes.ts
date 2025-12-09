@@ -56,11 +56,19 @@ router.post('/new-game', async (req: Request, res: Response) => {
 
     gameSessions.set(session.sessionId, session);
 
+    // Generate initial suggested actions based on opening
+    const initialSuggestions = [
+      'Look around carefully',
+      'Search for clues',
+      'Call out into the darkness'
+    ];
+
     res.json({
       success: true,
       session_id: session.sessionId,
       narrative: opening,
       state: engine.getGameState(session),
+      suggested_actions: initialSuggestions,
     });
   } catch (error) {
     console.error('New game error:', error);
@@ -105,10 +113,18 @@ router.post('/action', async (req: Request, res: Response) => {
       narrative: response.narrative_text,
       state: engine.getGameState(session),
       game_ended: gameEnded,
-      clue_found: response.clue_found,
-      clue_description: response.clue_description,
+      // New direction system
+      suggested_actions: response.suggested_actions,
+      objective_progress: response.objective_progress,
+      // New clue system
+      investigation_quality: response.investigation_quality,
+      clue_revelation: response.clue_revelation,
+      // World reaction system
+      world_reaction: response.world_reaction,
+      // Inventory
       item_gained: response.item_gained,
       item_lost: response.item_lost,
+      // Atmosphere
       atmospheric_hint: response.atmospheric_hint,
     });
   } catch (error) {

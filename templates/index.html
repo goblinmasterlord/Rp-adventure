@@ -73,32 +73,22 @@
 
     <!-- Game Screen -->
     <div id="game-screen" class="screen">
-        <!-- Status Bar -->
+        <!-- Compact Status Bar (Mobile Optimized) -->
         <header class="status-bar">
-            <div class="status-left">
-                <div class="player-name-display">
-                    <span class="label">Wanderer:</span>
-                    <span id="display-name" class="value">Unknown</span>
-                </div>
-                <div class="turn-counter">
-                    <span class="label">Turn</span>
-                    <span id="turn-num" class="value">0</span>
-                </div>
-            </div>
-
-            <div class="status-center">
+            <div class="status-row-top">
                 <div class="health-orbs" id="health-orbs">
                     <div class="orb filled" data-index="0"></div>
                     <div class="orb filled" data-index="1"></div>
                     <div class="orb filled" data-index="2"></div>
                 </div>
-                <span id="health-text" class="health-text">Healthy</span>
-            </div>
-
-            <div class="status-right">
-                <div class="phase-display">
-                    <span class="label">Phase:</span>
-                    <span id="phase-name" class="value">THE HOOK</span>
+                <div class="phase-badge" id="phase-badge">
+                    <span id="phase-name">HOOK</span>
+                </div>
+                <div class="tension-meter" id="tension-meter">
+                    <span class="tension-label">&#9889;</span>
+                    <div class="tension-bar">
+                        <div class="tension-fill" id="tension-fill" style="width: 20%"></div>
+                    </div>
                 </div>
                 <div class="clue-counter">
                     <span class="clue-icon">&#128270;</span>
@@ -106,6 +96,12 @@
                 </div>
             </div>
         </header>
+
+        <!-- Objective Banner -->
+        <div class="objective-banner" id="objective-banner">
+            <span class="objective-icon">&#127919;</span>
+            <span class="objective-text" id="objective-text">Discover where you are and what happened</span>
+        </div>
 
         <!-- Main Narrative Area -->
         <main class="narrative-container">
@@ -117,6 +113,22 @@
 
             <!-- Atmospheric Hint -->
             <div id="atmospheric-hint" class="atmospheric-hint hidden"></div>
+
+            <!-- Clue Discovery Notification -->
+            <div id="clue-notification" class="clue-notification hidden">
+                <div class="clue-icon-large">&#128270;</div>
+                <div class="clue-content">
+                    <span class="clue-label" id="clue-label">Clue Found!</span>
+                    <span class="clue-desc" id="clue-desc"></span>
+                    <span class="clue-connects" id="clue-connects"></span>
+                </div>
+            </div>
+
+            <!-- World Reaction Indicator -->
+            <div id="world-reaction" class="world-reaction hidden">
+                <span class="reaction-icon" id="reaction-icon">&#128065;</span>
+                <span class="reaction-text" id="reaction-text"></span>
+            </div>
         </main>
 
         <!-- Inventory Sidebar (toggleable) -->
@@ -134,9 +146,15 @@
 
         <!-- Input Area -->
         <footer class="input-area">
+            <!-- Suggested Actions (Tappable) -->
+            <div class="suggested-actions" id="suggested-actions">
+                <button class="suggestion-btn" data-action="Look around carefully">Look around carefully</button>
+                <button class="suggestion-btn" data-action="Search for clues">Search for clues</button>
+                <button class="suggestion-btn" data-action="Call out into the darkness">Call out</button>
+            </div>
+
             <div class="input-wrapper">
-                <span class="input-prompt">&#9654;</span>
-                <input type="text" id="player-input" placeholder="What do you do?" autocomplete="off" disabled>
+                <input type="text" id="player-input" placeholder="Or type your own action..." autocomplete="off" disabled>
                 <button id="submit-btn" class="submit-button" disabled>
                     <span class="submit-icon">&#10148;</span>
                 </button>

@@ -21,6 +21,9 @@ import {
   addItem,
   removeItem,
   addClue,
+  addClueHint,
+  adjustTension,
+  setObjective,
 } from '../models/mechanics.js';
 import { GeminiResponse, createDefaultResponse } from '../models/response.js';
 import { buildGamePrompt, AntiInjectionFilter } from '../prompts/builder.js';
@@ -209,9 +212,25 @@ export class GameEngine {
       return true;
     }
 
-    // Handle clues
-    if (response.clue_found) {
-      addClue(mechanics);
+    // Handle clue revelations (new system)
+    if (response.clue_revelation?.found) {
+      if (response.clue_revelation.depth === 'FULL') {
+        addClue(mechanics);
+        console.log(`[Clue] FULL clue discovered: ${response.clue_revelation.description}`);
+      } else if (response.clue_revelation.depth === 'PARTIAL' || response.clue_revelation.depth === 'HINT') {
+        addClueHint(mechanics);
+        console.log(`[Clue] ${response.clue_revelation.depth} hint: ${response.clue_revelation.description}`);
+      }
+    }
+
+    // Handle tension shifts
+    if (response.tension_shift !== 0) {
+      adjustTension(mechanics, response.tension_shift);
+    }
+
+    // Update current objective
+    if (response.current_objective) {
+      setObjective(mechanics, response.current_objective);
     }
 
     // Handle inventory

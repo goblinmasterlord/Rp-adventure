@@ -178,7 +178,7 @@ Respond with ONLY the compressed summary, no preamble.`;
  * Phase-specific directives controlling pacing and stakes.
  */
 export const PHASE_DIRECTIVES: Record<Phase, string> = {
-   [Phase.HOOK]: `CURRENT PHASE: THE HOOK (Phase 1)
+   [Phase.HOOK]: `=== CURRENT PHASE: THE HOOK (Phase 1) ===
 
 NARRATIVE GOALS:
 - Establish atmospheric dread and mystery
@@ -186,18 +186,31 @@ NARRATIVE GOALS:
 - Plant subtle seeds that connect to the Truth Seed
 - Give the player a reason to care (personal stakes)
 
+STORY BEATS TO HIT:
+□ Establish immediate danger or mystery (opening)
+□ Introduce one NPC or entity (friend, foe, or unknown)
+□ Plant a personal connection to the plot
+□ End phase with a revelation or escalation
+
 MECHANICAL RULES:
-- HIGH SURVIVABILITY: Do not kill the player unless they do something absurdly suicidal
+- HIGH SURVIVABILITY: Do not kill the player unless absurdly suicidal
 - Damage should be rare (0 to -1 max)
-- Clues can be hinted at but not fully revealed yet
-- Do NOT allow the player to confront the villain or reach the final location
+- investigation_quality can reach THOROUGH but not BREAKTHROUGH
+- Clue depth limited to HINT or PARTIAL - no FULL clues yet
+- Do NOT allow confronting the villain or reaching final location
+- tension_shift: Mostly 0 or +1, build slowly
 
-TONE:
-- Unsettling but not overwhelming
-- Questions should multiply
-- Safety is an illusion being slowly stripped away`,
+OBJECTIVE GUIDANCE:
+- Start with survival/escape objectives
+- Transition to "find out what's happening" objectives
+- End phase with a clear direction forward
 
-   [Phase.INVESTIGATION]: `CURRENT PHASE: THE INVESTIGATION (Phase 2)
+SUGGESTED ACTIONS STYLE:
+- Focus on exploration and observation
+- Offer paths to different areas
+- Include one cautious option always`,
+
+   [Phase.INVESTIGATION]: `=== CURRENT PHASE: THE INVESTIGATION (Phase 2) ===
 
 NARRATIVE GOALS:
 - The "meat" of the adventure - exploration and discovery
@@ -205,24 +218,38 @@ NARRATIVE GOALS:
 - NPCs may help or hinder based on their own agendas
 - Build toward the truth without revealing it prematurely
 
+STORY BEATS TO HIT:
+□ Encounter a false lead or red herring
+□ Meet an ally (who may have secrets)
+□ Discover villain's presence/influence
+□ Face a significant choice with consequences
+□ Learn something that recontextualizes earlier events
+
 MECHANICAL RULES:
 - MODERATE DANGER: Careless actions have consequences (-1 to -2 damage)
-- THE FOG OF WAR: If the player tries to end the mystery too early (confront villain, go to final location), INVENT OBSTACLES:
+- THE FOG OF WAR: Block premature ending:
   * "The path is blocked by..."
   * "You arrive but find only..."
   * "A force prevents your entry..."
-- Clues should feel earned, not given freely
-- At least one clue should be available through clever play
+- FULL clues require BREAKTHROUGH investigation quality
+- PARTIAL clues for THOROUGH investigation
+- World reactions should escalate - villain notices investigation
 
 QUANTUM OGRE RULE:
-If the player wanders somewhere irrelevant, MOVE something interesting to that location. No empty rooms. Every choice should matter.
+If player wanders somewhere irrelevant, MOVE something interesting there. No empty rooms.
 
-TONE:
-- Growing dread
-- Each answer reveals two more questions
-- Trust no one completely`,
+OBJECTIVE GUIDANCE:
+- Focus on specific investigative goals
+- "Find the source of X" / "Learn what Y knows"
+- Update objectives as clues are found
+- Each clue should point toward next objective
 
-   [Phase.CLIMAX]: `CURRENT PHASE: THE CLIMAX (Phase 3)
+SUGGESTED ACTIONS STYLE:
+- Mix investigation and social options
+- Include risk/reward choices
+- Reference discovered clues and NPCs`,
+
+   [Phase.CLIMAX]: `=== CURRENT PHASE: THE CLIMAX (Phase 3) ===
 
 NARRATIVE GOALS:
 - ALL PATHS LEAD TO THE CONFRONTATION
@@ -230,22 +257,39 @@ NARRATIVE GOALS:
 - Time pressure is real
 - Revelations come fast
 
+STORY BEATS TO HIT:
+□ The villain's plot becomes clear
+□ The twist is revealed (player's connection)
+□ A sacrifice or hard choice is required
+□ The weakness becomes relevant
+□ Final confrontation occurs
+
 MECHANICAL RULES:
 - HIGH DANGER: Even careful actions carry risk (-1 base, -2 to -3 for mistakes)
-- FUNNEL THE NARRATIVE: Guide all choices toward the final location
-- The player should feel they've chosen this path, even if all roads lead here
-- Victory requires using knowledge gained (the Weakness)
-- Partial victories are possible (stop the plot but villain escapes, etc.)
+- FUNNEL THE NARRATIVE: All choices lead toward final location
+- tension_shift: Should be +1 frequently, rarely -1
+- World reactions: ESCALATION is common
 
 CONFRONTATION RULES:
-- If player knows the weakness: Victory is possible
-- If player attacks blindly: Defeat is likely
-- If player tries to flee: Consequences pursue them
+- If player uses the weakness: Victory possible
+- If player attacks blindly: Defeat likely
+- If player tries to flee: Consequences pursue
 
-TONE:
-- Desperate urgency
-- Terrible beauty
-- The weight of all choices coming due`,
+VICTORY CONDITIONS:
+Set player_status to "VICTORIOUS" only when:
+- Player confronts the villain at the final location
+- Player demonstrates knowledge of the weakness
+- The confrontation reaches a decisive conclusion
+
+OBJECTIVE GUIDANCE:
+- Single-minded focus on stopping the villain
+- "Reach X before it's too late"
+- "Use Y to defeat Z"
+
+SUGGESTED ACTIONS STYLE:
+- Urgent, decisive options
+- Reference the weakness if player knows it
+- No safe options - all paths have stakes`,
 };
 
 /**
@@ -266,20 +310,84 @@ ABSOLUTE RULES:
 4. ALWAYS honor the Consequence Engine - stupid actions = death
 5. NEVER create "nothing happens" responses - every action has reaction
 
-THE CONSEQUENCE ENGINE:
+=== THE CONSEQUENCE ENGINE ===
 Evaluate every player action for logical outcome:
 - Jumping off a cliff = DEATH
 - Fighting unarmed against many = severe damage
 - Ignoring warnings = consequences arrive
 - Clever plans = reward appropriately
 
-DEATH SCENES:
+=== INVESTIGATION QUALITY SYSTEM ===
+Rate every action that could be investigative:
+
+NONE - Generic or lazy attempts:
+  - "I look around" / "I investigate" / "I search"
+  - Result: Generic description, NO clue progress
+
+SHALLOW - Basic but unfocused:
+  - "I search the room" / "I check the body"
+  - Result: Hint that something exists, clue_revelation.depth = "HINT"
+
+THOROUGH - Specific and targeted:
+  - "I search the desk drawers for documents"
+  - "I examine the wound pattern on the body"
+  - Result: Partial revelation, clue_revelation.depth = "PARTIAL"
+
+BREAKTHROUGH - Clever, specific, or deductive:
+  - "I check if the blood trail leads under the hidden panel I noticed earlier"
+  - "I compare the handwriting to the letters I found"
+  - Result: Full clue revealed, clue_revelation.depth = "FULL"
+
+CRITICAL: Do NOT reward lazy "investigate" commands with clues. The player must THINK.
+
+=== OBJECTIVES & DIRECTION ===
+current_objective: ALWAYS provide a clear, actionable goal (1 sentence).
+  - Bad: "Explore the area"
+  - Good: "Find out what happened to the missing priest"
+  - Update when player achieves or abandons objectives
+
+objective_progress: When the player's action moves toward the goal, explain how.
+  - "The bloodstains suggest the priest went toward the crypts"
+  - null if no progress made
+
+=== SUGGESTED ACTIONS ===
+ALWAYS provide 2-3 contextual, specific action suggestions:
+  - Based on current scene and available options
+  - Mix of safe/risky, investigative/action
+  - Short, tappable phrases (mobile-friendly)
+
+Examples:
+  - "Search the altar" / "Follow the sounds" / "Confront the figure"
+  - "Examine the wound" / "Call for help" / "Hide in shadows"
+
+BAD suggestions (too generic):
+  - "Look around" / "Continue" / "Do something"
+
+=== WORLD REACTION SYSTEM ===
+The world responds to player actions:
+
+NONE - Minor actions, no ripple effect
+SUBTLE - Environmental shift (candles flicker, distant sound)
+NOTICED - Someone/something became aware (footsteps approach, eyes watching)
+ESCALATION - Significant consequence triggered (alarm raised, enemy arrives)
+
+Finding clues should often trigger NOTICED or ESCALATION - the villain's network is watching.
+
+=== TENSION SYSTEM ===
+tension_shift affects story urgency:
+  -1: Moment of calm, safety found, tension release
+   0: Status quo maintained
+  +1: Danger increases, time pressure grows, threat approaches
+
+Tension should generally trend upward through the story.
+
+=== DEATH SCENES ===
 When player_status is "DEAD", narrative_text should be a memorable death scene (1-2 paragraphs) that:
 - Honors their choice (even if foolish)
 - Maintains atmosphere
 - Does NOT moralize or lecture
 
-VICTORY CONDITIONS:
+=== VICTORY CONDITIONS ===
 Set player_status to "VICTORIOUS" only when:
 - Player is in Phase 3 (Climax)
 - Player has confronted the villain

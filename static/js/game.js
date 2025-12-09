@@ -29,13 +29,29 @@ class InfiniteAdventure {
             worldOptions: document.getElementById('world-options'),
             enterWorldBtn: document.getElementById('enter-world-btn'),
 
-            // Game screen
+            // Game screen - Status
             displayName: document.getElementById('display-name'),
             turnNum: document.getElementById('turn-num'),
             healthOrbs: document.getElementById('health-orbs'),
             healthText: document.getElementById('health-text'),
             phaseName: document.getElementById('phase-name'),
             clueCount: document.getElementById('clue-count'),
+
+            // Game screen - New elements
+            tensionMeter: document.getElementById('tension-meter'),
+            tensionFill: document.getElementById('tension-fill'),
+            objectiveBanner: document.getElementById('objective-banner'),
+            objectiveText: document.getElementById('objective-text'),
+            suggestedActions: document.getElementById('suggested-actions'),
+            clueNotification: document.getElementById('clue-notification'),
+            clueLabel: document.getElementById('clue-label'),
+            clueDesc: document.getElementById('clue-desc'),
+            clueConnects: document.getElementById('clue-connects'),
+            worldReaction: document.getElementById('world-reaction'),
+            reactionIcon: document.getElementById('reaction-icon'),
+            reactionText: document.getElementById('reaction-text'),
+
+            // Game screen - Narrative
             narrativeScroll: document.getElementById('narrative-scroll'),
             atmosphericHint: document.getElementById('atmospheric-hint'),
             inventoryPanel: document.getElementById('inventory-panel'),
@@ -89,16 +105,51 @@ class InfiniteAdventure {
         });
         this.elements.inventoryToggle.addEventListener('click', () => this.toggleInventory());
 
+        // Suggested action buttons
+        this.bindSuggestedActions();
+
         // End screens
         this.elements.restartBtn.addEventListener('click', () => this.resetToTitle());
         this.elements.newGameBtn.addEventListener('click', () => this.resetToTitle());
     }
 
-    // ... (createParticles remain same)
+    bindSuggestedActions() {
+        // Initial binding for static buttons
+        this.elements.suggestedActions.addEventListener('click', (e) => {
+            const btn = e.target.closest('.suggestion-btn');
+            if (btn && !btn.disabled && !this.isLoading) {
+                const action = btn.dataset.action;
+                if (action) {
+                    this.elements.playerInput.value = action;
+                    this.submitAction();
+                }
+            }
+        });
+    }
 
-    // ... (focusNameInput remain same)
+    createParticles() {
+        const container = this.elements.particles;
+        if (!container) return;
 
-    //Screen Management
+        for (let i = 0; i < 20; i++) {
+            const particle = document.createElement('div');
+            particle.className = 'particle';
+            particle.style.left = `${Math.random() * 100}%`;
+            particle.style.animationDelay = `${Math.random() * 15}s`;
+            particle.style.animationDuration = `${10 + Math.random() * 10}s`;
+            container.appendChild(particle);
+        }
+    }
+
+    focusNameInput() {
+        setTimeout(() => {
+            if (this.elements.playerNameInput) {
+                this.elements.playerNameInput.focus();
+            }
+        }, 500);
+    }
+
+    // Screen Management
     showScreen(screenId) {
         const screens = ['title-screen', 'setup-screen', 'game-screen', 'gameover-screen', 'victory-screen'];
         screens.forEach(id => {
@@ -107,9 +158,10 @@ class InfiniteAdventure {
         });
     }
 
+    // ==========================================================================
     // Game Flow
+    // ==========================================================================
 
-    // Step 1: Request Options
     async initiateSetup() {
         const playerName = this.elements.playerNameInput.value.trim() || 'Wanderer';
         this.setLoading(true);
@@ -194,7 +246,6 @@ class InfiniteAdventure {
         this.elements.enterWorldBtn.disabled = !(this.selectedCharacter && this.selectedWorld);
     }
 
-    // Step 2: Start Game with selections
     async enterWorld() {
         if (!this.selectedCharacter || !this.selectedWorld) return;
 
@@ -213,7 +264,7 @@ class InfiniteAdventure {
                     world: this.selectedWorld
                 })
             });
-            // ... (rest is similar to old startNewGame)
+
             const data = await response.json();
 
             if (data.success) {
@@ -229,6 +280,11 @@ class InfiniteAdventure {
 
                 // Update state display
                 this.updateStateDisplay(data.state);
+
+                // Update suggested actions
+                if (data.suggested_actions) {
+                    this.updateSuggestedActions(data.suggested_actions);
+                }
 
                 // Switch to game screen
                 this.showScreen('game-screen');
@@ -252,7 +308,6 @@ class InfiniteAdventure {
         }
     }
 
-
     async submitAction() {
         const action = this.elements.playerInput.value.trim();
         if (!action || this.isLoading || !this.sessionId) return;
@@ -265,7 +320,8 @@ class InfiniteAdventure {
 
         this.setLoading(true);
         this.disableInput();
-        this.showTypingIndicator(); // Show indicator
+        this.disableSuggestedActions();
+        this.showTypingIndicator();
 
         try {
             const response = await fetch('/api/action', {
@@ -279,7 +335,7 @@ class InfiniteAdventure {
 
             const data = await response.json();
 
-            this.hideTypingIndicator(); // Hide indicator
+            this.hideTypingIndicator();
 
             if (data.success) {
                 // Check for health changes to animate
@@ -288,8 +344,8 @@ class InfiniteAdventure {
 
                 // Add narrator response
                 this.addNarrativeEntry(data.narrative, 'narrator', {
-                    clueFound: data.clue_found,
-                    clueDescription: data.clue_description,
+                    clueRevelation: data.clue_revelation,
+                    investigationQuality: data.investigation_quality,
                     itemGained: data.item_gained,
                     itemLost: data.item_lost,
                     healthChange: newHealth - oldHealth
@@ -298,6 +354,21 @@ class InfiniteAdventure {
                 // Update state with animation
                 this.currentState = data.state;
                 this.updateStateDisplay(data.state, oldHealth !== newHealth);
+
+                // Update suggested actions
+                if (data.suggested_actions) {
+                    this.updateSuggestedActions(data.suggested_actions);
+                }
+
+                // Show clue notification if clue found
+                if (data.clue_revelation?.found) {
+                    this.showClueNotification(data.clue_revelation);
+                }
+
+                // Show world reaction
+                if (data.world_reaction?.type !== 'NONE' && data.world_reaction?.description) {
+                    this.showWorldReaction(data.world_reaction);
+                }
 
                 // Show atmospheric hint
                 if (data.atmospheric_hint) {
@@ -315,20 +386,125 @@ class InfiniteAdventure {
                     }, 2000);
                 } else {
                     this.enableInput();
+                    this.enableSuggestedActions();
                 }
             } else {
                 this.showError(data.error || 'Action failed');
                 this.enableInput();
+                this.enableSuggestedActions();
             }
         } catch (error) {
             console.error('Action error:', error);
             this.hideTypingIndicator();
             this.showError('Connection lost. Please try again.');
             this.enableInput();
+            this.enableSuggestedActions();
         } finally {
             this.setLoading(false);
         }
     }
+
+    // ==========================================================================
+    // Suggested Actions
+    // ==========================================================================
+
+    updateSuggestedActions(actions) {
+        const container = this.elements.suggestedActions;
+        container.innerHTML = '';
+
+        actions.forEach(action => {
+            const btn = document.createElement('button');
+            btn.className = 'suggestion-btn';
+            btn.dataset.action = action;
+            btn.textContent = action;
+            container.appendChild(btn);
+        });
+    }
+
+    disableSuggestedActions() {
+        const buttons = this.elements.suggestedActions.querySelectorAll('.suggestion-btn');
+        buttons.forEach(btn => btn.disabled = true);
+    }
+
+    enableSuggestedActions() {
+        const buttons = this.elements.suggestedActions.querySelectorAll('.suggestion-btn');
+        buttons.forEach(btn => btn.disabled = false);
+    }
+
+    // ==========================================================================
+    // Clue Notification
+    // ==========================================================================
+
+    showClueNotification(revelation) {
+        const notification = this.elements.clueNotification;
+        const label = this.elements.clueLabel;
+        const desc = this.elements.clueDesc;
+        const connects = this.elements.clueConnects;
+
+        // Set label based on depth
+        const labels = {
+            'HINT': 'Something Here...',
+            'PARTIAL': 'Partial Discovery',
+            'FULL': 'Clue Found!'
+        };
+        label.textContent = labels[revelation.depth] || 'Discovery';
+        label.className = `clue-label ${revelation.depth.toLowerCase()}`;
+
+        // Set description
+        desc.textContent = revelation.description;
+
+        // Set connection hint
+        if (revelation.connects_to) {
+            connects.textContent = revelation.connects_to;
+            connects.style.display = 'block';
+        } else {
+            connects.style.display = 'none';
+        }
+
+        // Show notification
+        notification.classList.remove('hidden');
+
+        // Auto-hide after delay
+        setTimeout(() => {
+            notification.classList.add('hidden');
+        }, 4000);
+    }
+
+    // ==========================================================================
+    // World Reaction
+    // ==========================================================================
+
+    showWorldReaction(reaction) {
+        const el = this.elements.worldReaction;
+        const icon = this.elements.reactionIcon;
+        const text = this.elements.reactionText;
+
+        // Set icon based on type
+        const icons = {
+            'SUBTLE': '👁',
+            'NOTICED': '⚠️',
+            'ESCALATION': '🔥'
+        };
+        icon.textContent = icons[reaction.type] || '👁';
+
+        // Set text
+        text.textContent = reaction.description;
+
+        // Set class for styling
+        el.className = `world-reaction ${reaction.type.toLowerCase()}`;
+
+        // Show
+        el.classList.remove('hidden');
+
+        // Auto-hide after animation
+        setTimeout(() => {
+            el.classList.add('hidden');
+        }, 3500);
+    }
+
+    // ==========================================================================
+    // Typing Indicator
+    // ==========================================================================
 
     showTypingIndicator() {
         const existing = document.getElementById('typing-indicator');
@@ -344,7 +520,7 @@ class InfiniteAdventure {
             <div class="typing-dot"></div>
         `;
         this.elements.narrativeScroll.appendChild(indicator);
-        // Scroll to bottom
+
         const scrollWrapper = this.elements.narrativeScroll.parentElement;
         setTimeout(() => {
             scrollWrapper.scrollTop = scrollWrapper.scrollHeight;
@@ -376,10 +552,12 @@ class InfiniteAdventure {
             });
 
             // Add event notifications
-            if (events.clueFound) {
+            if (events.clueRevelation?.found) {
                 const notification = document.createElement('div');
-                notification.className = 'event-notification clue';
-                notification.textContent = `Clue Discovered: ${events.clueDescription || 'A piece of the puzzle'}`;
+                const depth = events.clueRevelation.depth;
+                notification.className = `event-notification clue ${depth.toLowerCase()}`;
+                const labels = { 'HINT': 'Hint', 'PARTIAL': 'Partial Clue', 'FULL': 'Clue' };
+                notification.textContent = `${labels[depth] || 'Discovery'}: ${events.clueRevelation.description}`;
                 entry.appendChild(notification);
             }
 
@@ -410,8 +588,8 @@ class InfiniteAdventure {
     }
 
     updateStateDisplay(state, animateHealth = false) {
-        // Turn counter
-        this.elements.turnNum.textContent = state.turn;
+        // Turn counter (removed since we simplified status bar)
+        // this.elements.turnNum.textContent = state.turn;
 
         // Health orbs
         const orbs = this.elements.healthOrbs.querySelectorAll('.orb');
@@ -429,17 +607,57 @@ class InfiniteAdventure {
             }
         });
 
-        // Health text
-        this.elements.healthText.textContent = state.health_desc || this.getHealthText(state.health);
-
         // Phase
         this.elements.phaseName.textContent = state.phase;
 
         // Clues
         this.elements.clueCount.textContent = state.clues;
 
+        // Tension meter
+        this.updateTension(state.tension);
+
+        // Objective
+        if (state.currentObjective) {
+            this.updateObjective(state.currentObjective);
+        }
+
         // Inventory
         this.updateInventory(state.inventory);
+    }
+
+    updateTension(tension) {
+        const fill = this.elements.tensionFill;
+        const meter = this.elements.tensionMeter;
+
+        // Tension is 0-10, convert to percentage
+        const percent = (tension / 10) * 100;
+        fill.style.width = `${percent}%`;
+
+        // Update class for color
+        meter.classList.remove('low', 'medium', 'high', 'critical');
+        if (tension <= 2) {
+            meter.classList.add('low');
+        } else if (tension <= 5) {
+            meter.classList.add('medium');
+        } else if (tension <= 8) {
+            meter.classList.add('high');
+        } else {
+            meter.classList.add('critical');
+        }
+    }
+
+    updateObjective(objective) {
+        const banner = this.elements.objectiveBanner;
+        const text = this.elements.objectiveText;
+
+        const oldText = text.textContent;
+        if (oldText !== objective) {
+            text.textContent = objective;
+            banner.classList.add('updated');
+            setTimeout(() => {
+                banner.classList.remove('updated');
+            }, 500);
+        }
     }
 
     getHealthText(health) {
@@ -521,6 +739,8 @@ class InfiniteAdventure {
     resetToTitle() {
         this.sessionId = null;
         this.currentState = null;
+        this.selectedCharacter = null;
+        this.selectedWorld = null;
         this.elements.playerNameInput.value = '';
         this.elements.narrativeScroll.innerHTML = '';
         this.showScreen('title-screen');
