@@ -115,6 +115,8 @@ class InfiniteAdventure {
 
     bindSuggestedActions() {
         // Initial binding for static buttons
+        if (!this.elements.suggestedActions) return;
+
         this.elements.suggestedActions.addEventListener('click', (e) => {
             const btn = e.target.closest('.suggestion-btn');
             if (btn && !btn.disabled && !this.isLoading) {
@@ -272,7 +274,9 @@ class InfiniteAdventure {
                 this.currentState = data.state;
 
                 // Update UI
-                this.elements.displayName.textContent = playerName;
+                if (this.elements.displayName) {
+                    this.elements.displayName.textContent = playerName;
+                }
                 this.elements.narrativeScroll.innerHTML = '';
 
                 // Add opening narrative
@@ -410,6 +414,8 @@ class InfiniteAdventure {
 
     updateSuggestedActions(actions) {
         const container = this.elements.suggestedActions;
+        if (!container) return;
+
         container.innerHTML = '';
 
         actions.forEach(action => {
@@ -422,11 +428,13 @@ class InfiniteAdventure {
     }
 
     disableSuggestedActions() {
+        if (!this.elements.suggestedActions) return;
         const buttons = this.elements.suggestedActions.querySelectorAll('.suggestion-btn');
         buttons.forEach(btn => btn.disabled = true);
     }
 
     enableSuggestedActions() {
+        if (!this.elements.suggestedActions) return;
         const buttons = this.elements.suggestedActions.querySelectorAll('.suggestion-btn');
         buttons.forEach(btn => btn.disabled = false);
     }
@@ -440,6 +448,8 @@ class InfiniteAdventure {
         const label = this.elements.clueLabel;
         const desc = this.elements.clueDesc;
         const connects = this.elements.clueConnects;
+
+        if (!notification || !label || !desc) return;
 
         // Set label based on depth
         const labels = {
@@ -478,6 +488,8 @@ class InfiniteAdventure {
         const el = this.elements.worldReaction;
         const icon = this.elements.reactionIcon;
         const text = this.elements.reactionText;
+
+        if (!el || !icon || !text) return;
 
         // Set icon based on type
         const icons = {
@@ -629,6 +641,8 @@ class InfiniteAdventure {
         const fill = this.elements.tensionFill;
         const meter = this.elements.tensionMeter;
 
+        if (!fill || !meter) return;
+
         // Tension is 0-10, convert to percentage
         const percent = (tension / 10) * 100;
         fill.style.width = `${percent}%`;
@@ -649,6 +663,8 @@ class InfiniteAdventure {
     updateObjective(objective) {
         const banner = this.elements.objectiveBanner;
         const text = this.elements.objectiveText;
+
+        if (!banner || !text) return;
 
         const oldText = text.textContent;
         if (oldText !== objective) {
@@ -690,6 +706,8 @@ class InfiniteAdventure {
 
     showAtmosphericHint(hint) {
         const el = this.elements.atmosphericHint;
+        if (!el) return;
+
         el.textContent = hint;
         el.classList.remove('hidden');
 
@@ -699,7 +717,9 @@ class InfiniteAdventure {
     }
 
     toggleInventory() {
-        this.elements.inventoryPanel.classList.toggle('expanded');
+        if (this.elements.inventoryPanel) {
+            this.elements.inventoryPanel.classList.toggle('expanded');
+        }
     }
 
     // ==========================================================================
