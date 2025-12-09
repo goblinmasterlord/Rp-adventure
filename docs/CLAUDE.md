@@ -75,11 +75,35 @@ Every AI response MUST return structured JSON via Zod schema:
 ```typescript
 // src/models/response.ts
 {
-  narrative_text: string,      // Story text shown to player
-  health_change: -3 to +1,     // Damage or healing
+  // Narrative
+  narrative_text: string,
+
+  // Player State
+  health_change: -3 to +1,
   player_status: "ALIVE" | "DEAD" | "VICTORIOUS",
-  clue_found: boolean,
-  clue_description: string | null,
+
+  // Investigation System (NEW)
+  investigation_quality: "NONE" | "SHALLOW" | "THOROUGH" | "BREAKTHROUGH",
+  clue_revelation: {
+    found: boolean,
+    depth: "HINT" | "PARTIAL" | "FULL",
+    description: string,
+    connects_to: string | null  // Points to next step
+  } | null,
+
+  // Direction System (NEW)
+  current_objective: string,           // What player should pursue
+  objective_progress: string | null,   // How action moved toward goal
+  suggested_actions: string[],         // 2-3 tappable suggestions
+
+  // World Reaction System (NEW)
+  world_reaction: {
+    type: "NONE" | "SUBTLE" | "NOTICED" | "ESCALATION",
+    description: string | null
+  },
+  tension_shift: -1 | 0 | +1,          // Story urgency change
+
+  // Inventory & Phase
   item_gained: string | null,
   item_lost: string | null,
   phase_transition: boolean,
@@ -88,6 +112,36 @@ Every AI response MUST return structured JSON via Zod schema:
 ```
 
 **Key rule**: Stupid actions = death. Jumping off cliff returns `player_status: "DEAD"`.
+
+## Investigation Quality System
+
+Players must THINK to find clues - lazy "I investigate" commands get nothing:
+
+| Quality | Example | Result |
+|---------|---------|--------|
+| **NONE** | "I look around" | Generic description, no clue |
+| **SHALLOW** | "I search the room" | Hint that something exists |
+| **THOROUGH** | "I check the desk drawers" | Partial clue revealed |
+| **BREAKTHROUGH** | "I compare the handwriting to the letters" | Full clue discovered |
+
+Only FULL clues count toward the 3-clue gate for Phase 3.
+
+## Direction System
+
+Every response includes:
+- **current_objective**: Clear, actionable goal ("Find the source of the whispers")
+- **suggested_actions**: 2-3 tappable buttons for mobile-friendly play
+- **objective_progress**: Feedback on how action moved toward goal
+
+## Tension System
+
+Tension (0-10) affects story urgency:
+- 0-2: Calm (gold color)
+- 3-5: Uneasy (gradient)
+- 6-8: Dangerous (red, glowing)
+- 9-10: Critical (pulsing red)
+
+Finding clues, world reactions, and phase transitions increase tension.
 
 ## Tech Stack
 
@@ -154,8 +208,11 @@ interface GameSession {
   mechanics: {
     health: 0-3,
     inventory: string[],
-    cluesCollected: number,
-    playerStatus: 'ALIVE' | 'DEAD' | 'VICTORIOUS'
+    cluesCollected: number,     // Full clues only
+    clueHints: number,          // Partial hints (NEW)
+    playerStatus: 'ALIVE' | 'DEAD' | 'VICTORIOUS',
+    tension: 0-10,              // Story urgency (NEW)
+    currentObjective: string    // What player should pursue (NEW)
   };
   narrative: {
     truthSeed: { villain, motive, plot, twist, location, weakness },

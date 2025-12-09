@@ -21,11 +21,20 @@ export interface GameMechanics {
   /** Items the player carries */
   inventory: string[];
 
-  /** Number of mystery clues found */
+  /** Number of full clues found (FULL depth only) */
   cluesCollected: number;
+
+  /** Number of partial clues/hints found */
+  clueHints: number;
 
   /** Current life state */
   playerStatus: PlayerStatus;
+
+  /** Story tension level: 0-10, affects urgency and danger */
+  tension: number;
+
+  /** Current objective the player should pursue */
+  currentObjective: string;
 }
 
 /**
@@ -36,7 +45,10 @@ export function createGameMechanics(): GameMechanics {
     health: 3,
     inventory: [],
     cluesCollected: 0,
+    clueHints: 0,
     playerStatus: PlayerStatus.ALIVE,
+    tension: 2,  // Start with low tension
+    currentObjective: 'Discover where you are and what happened',
   };
 }
 
@@ -80,10 +92,31 @@ export function removeItem(mechanics: GameMechanics, item: string): boolean {
 }
 
 /**
- * Increment clue counter.
+ * Increment full clue counter.
  */
 export function addClue(mechanics: GameMechanics): void {
   mechanics.cluesCollected++;
+}
+
+/**
+ * Increment clue hints counter.
+ */
+export function addClueHint(mechanics: GameMechanics): void {
+  mechanics.clueHints++;
+}
+
+/**
+ * Adjust tension level (clamped 0-10).
+ */
+export function adjustTension(mechanics: GameMechanics, delta: number): void {
+  mechanics.tension = Math.max(0, Math.min(10, mechanics.tension + delta));
+}
+
+/**
+ * Set current objective.
+ */
+export function setObjective(mechanics: GameMechanics, objective: string): void {
+  mechanics.currentObjective = objective;
 }
 
 /**
@@ -97,4 +130,15 @@ export function getHealthDescription(health: number): string {
     0: 'dead',
   };
   return descriptions[health] ?? 'unknown state';
+}
+
+/**
+ * Human-readable tension level.
+ */
+export function getTensionDescription(tension: number): string {
+  if (tension <= 2) return 'calm';
+  if (tension <= 4) return 'uneasy';
+  if (tension <= 6) return 'tense';
+  if (tension <= 8) return 'dangerous';
+  return 'critical';
 }

@@ -16,6 +16,7 @@ import {
   PlayerStatus,
   createGameMechanics,
   getHealthDescription,
+  getTensionDescription,
 } from './mechanics.js';
 
 /**
@@ -157,8 +158,12 @@ export interface GameStateSummary {
   healthDesc: string;
   phase: string;
   clues: number;
+  clueHints: number;
   inventory: string[];
   status: string;
+  tension: number;
+  tensionDesc: string;
+  currentObjective: string;
   phaseHint?: string;
 }
 
@@ -176,8 +181,12 @@ export function getStateSummary(session: GameSession): GameStateSummary {
     healthDesc: getHealthDescription(session.mechanics.health),
     phase: phaseName,
     clues: session.mechanics.cluesCollected,
+    clueHints: session.mechanics.clueHints,
     inventory: session.mechanics.inventory,
     status: session.status,
+    tension: session.mechanics.tension,
+    tensionDesc: getTensionDescription(session.mechanics.tension),
+    currentObjective: session.mechanics.currentObjective,
   };
 
   // Add phase-specific hints
