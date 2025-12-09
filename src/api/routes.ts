@@ -57,10 +57,11 @@ router.post('/new-game', async (req: Request, res: Response) => {
     gameSessions.set(session.sessionId, session);
 
     // Generate initial suggested actions based on opening
+    // IMPORTANT: Do not use lazy/generic actions like "search for clues"
     const initialSuggestions = [
-      'Look around carefully',
-      'Search for clues',
-      'Call out into the darkness'
+      'Examine your surroundings',
+      'Check your pockets',
+      'Listen for sounds'
     ];
 
     res.json({

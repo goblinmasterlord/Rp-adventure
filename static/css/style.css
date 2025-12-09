@@ -1399,37 +1399,66 @@ body {
     50% { opacity: 0.7; }
 }
 
-/* Objective Banner */
+/* Objective Banner - Prominent Goal Display */
 .objective-banner {
     width: 100%;
-    background: linear-gradient(90deg, rgba(42, 74, 106, 0.3) 0%, rgba(42, 74, 106, 0.1) 100%);
-    border-bottom: 1px solid var(--mystic-blue);
+    background: linear-gradient(90deg, rgba(42, 74, 106, 0.5) 0%, rgba(42, 74, 106, 0.25) 100%);
+    border-top: 2px solid var(--mystic-glow);
+    border-bottom: 2px solid var(--mystic-blue);
     padding: var(--space-sm) var(--space-md);
     display: flex;
     align-items: center;
     gap: var(--space-sm);
+    animation: objective-pulse 2s ease-in-out;
+    position: relative;
+}
+
+.objective-banner::before {
+    content: 'OBJECTIVE';
+    position: absolute;
+    left: var(--space-md);
+    top: -0.5em;
+    font-size: 0.6rem;
+    font-family: var(--font-display);
+    letter-spacing: 0.15em;
+    color: var(--mystic-glow);
+    background: var(--shadow-deep);
+    padding: 0 0.5em;
+    text-transform: uppercase;
 }
 
 .objective-icon {
-    font-size: 1rem;
-    filter: grayscale(0.3);
+    font-size: 1.25rem;
+    filter: drop-shadow(0 0 4px rgba(74, 138, 189, 0.5));
 }
 
 .objective-text {
     font-family: var(--font-display);
-    font-size: 0.8125rem;
+    font-size: 0.9rem;
     letter-spacing: 0.05em;
-    color: var(--mystic-glow);
+    color: var(--parchment-light);
     flex: 1;
+    font-weight: 500;
 }
 
 .objective-banner.updated {
-    animation: objective-highlight 0.5s ease-out;
+    animation: objective-highlight 0.6s ease-out;
+}
+
+@keyframes objective-pulse {
+    0%, 100% { border-top-color: var(--mystic-glow); }
+    50% { border-top-color: var(--mystic-blue); }
 }
 
 @keyframes objective-highlight {
-    0% { background: rgba(74, 138, 189, 0.4); }
-    100% { background: linear-gradient(90deg, rgba(42, 74, 106, 0.3) 0%, rgba(42, 74, 106, 0.1) 100%); }
+    0% {
+        background: rgba(74, 138, 189, 0.6);
+        transform: scale(1.02);
+    }
+    100% {
+        background: linear-gradient(90deg, rgba(42, 74, 106, 0.5) 0%, rgba(42, 74, 106, 0.25) 100%);
+        transform: scale(1);
+    }
 }
 
 /* Suggested Actions */
@@ -1631,11 +1660,17 @@ body {
     }
 
     .objective-banner {
-        padding: var(--space-xs) var(--space-sm);
+        padding: var(--space-sm) var(--space-sm);
+        padding-top: calc(var(--space-sm) + 0.5em);
+    }
+
+    .objective-banner::before {
+        font-size: 0.55rem;
+        top: 0.2em;
     }
 
     .objective-text {
-        font-size: 0.75rem;
+        font-size: 0.8rem;
     }
 
     .suggested-actions {
